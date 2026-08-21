@@ -44,13 +44,13 @@ export default async function DashboardHome() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink">
-            Halo, {name.split(" ")[0]} 👋
+            Halo, {name.split(" ")[0]} 
           </h1>
-          <p className="text-sm text-ink-muted">Pantau kesehatan mentalmu di sini</p>
+          <p className="text-sm text-ink-muted">Mari Kita Pantau kesehatan mentalmu di sini</p>
         </div>
         <div className="flex items-center gap-2">
           {(entries?.length ?? 0) === 0 && <SeedDemoButton variant="seed" />}
-          <div className="rounded-full bg-primary-bg px-4 py-2 text-sm text-ink-muted">📅 {today}</div>
+          <div className="rounded-lg bg-primary-bg px-4 py-2 text-sm text-ink-muted"> Hari/tanggl: {today}</div>
         </div>
       </div>
 
@@ -85,9 +85,9 @@ export default async function DashboardHome() {
       {/* REMINDER + AI */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary to-secondary py-10 text-center text-white shadow-softLg">
-          <div className="text-4xl">🧘</div>
+          
           <h3 className="text-lg font-bold">Waktunya Jurnal!</h3>
-          <p className="text-sm opacity-90">Tulis perasaanmu hari ini ya 🌱</p>
+          <p className="text-sm opacity-90">Tulislah perasaanmu hari ini </p>
           <div className="my-2 text-sm font-semibold">
             {streak} <span className="opacity-80">/ 7 hari berturut-turut</span>
           </div>
@@ -118,16 +118,16 @@ export default async function DashboardHome() {
         <QuickLink href="/dashboard/screening" icon={ClipboardCheck} label="Screening" desc="Tes PHQ-9 & GAD-7" />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-primary-light bg-primary-bg p-4 text-xs text-ink-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-primary-light bg-primary-bg p-4 text-xs text-ink-muted">
         {(entries?.length ?? 0) === 0 ? (
           <span>
-            ⚠️ Belum ada data di <strong>Supabase</strong>. Isi Diary Mood, atau klik{" "}
+            Belum ada data di <strong>Supabase</strong>. Isi Diary Mood, atau klik{" "}
             <strong>&quot;Isi dengan Data Contoh&quot;</strong> di atas untuk melihat dashboard terisi.
           </span>
         ) : (
           <>
             <span>
-              📊 Statistik dihitung dari data asli tabel <code>mood_entries</code> di Supabase.
+              Statistik dihitung dari data asli tabel <code>mood_entries</code> di Supabase.
             </span>
             <SeedDemoButton variant="reset" />
           </>

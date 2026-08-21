@@ -46,7 +46,7 @@ export default function LoginPage() {
         <Link href="/" className="mb-6 flex items-center justify-center gap-2 text-2xl font-extrabold text-primary">
           <Leaf className="h-6 w-6" /> Sehat<span className="text-secondary">Jiwa</span>
         </Link>
-        <h1 className="mb-1 text-center text-xl font-bold text-ink">Selamat datang kembali 👋</h1>
+        <h1 className="mb-1 text-center text-xl font-bold text-ink">Selamat datang kembali</h1>
         <p className="mb-6 text-center text-sm text-ink-muted">
           Masuk untuk melanjutkan perjalanan kesehatan mentalmu.
         </p>
@@ -60,7 +60,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 required
-                placeholder="kamu@email.com"
+                placeholder="masukkan@email.com"
                 className="pl-9"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

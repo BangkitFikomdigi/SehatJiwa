@@ -31,23 +31,34 @@ const steps = [
 
 export default function LandingPage() {
   return (
+    <main className="overflow-x-hidden w-full">
     <>
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 border-b border-primary/10 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6 py-4">
+          
+          {/* 1. BAGIAN KIRI: Logo */}
           <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold text-primary">
             <Leaf className="h-6 w-6" /> Sehat<span className="text-secondary">Jiwa</span>
           </Link>
-          <ul className="hidden items-center gap-6 md:flex">
+          {/* 2. BAGIAN TENGAH: Menu Navigasi */}
+          <ul className="hidden flex-1 items-center justify-center gap-8 md:flex">
             <li><a href="#tentang" className="text-sm font-medium text-ink hover:text-primary">Tentang</a></li>
             <li><a href="#kenapa" className="text-sm font-medium text-ink hover:text-primary">Kenapa Kita</a></li>
             <li><a href="#cara" className="text-sm font-medium text-ink hover:text-primary">Cara Penggunaan</a></li>
-            <li><Link href="/login" className="text-sm font-medium text-ink hover:text-primary">Masuk</Link></li>
-            <li><Link href="/register"><Button size="sm">Daftar</Button></Link></li>
           </ul>
+
+          {/* 3. BAGIAN KANAN: Tombol Auth */}
+          <div className="hidden items-center gap-6 md:flex">
+            <Link href="/login" className="text-sm font-medium text-ink hover:text-primary">Masuk</Link>
+            <Link href="/register"><Button size="sm">Daftar</Button></Link>
+          </div>
+
+          {/* Tombol Daftar Mobile */}
           <Link href="/register" className="md:hidden">
             <Button size="sm">Daftar</Button>
           </Link>
+          
         </div>
       </nav>
 
@@ -68,38 +79,36 @@ export default function LandingPage() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link href="/register">
-            <Button size="lg">✨ Mulai Sekarang</Button>
+            <Button size="lg" className="rounded-full">Mulai Sekarang</Button>
           </Link>
           <a href="#tentang">
-            <Button size="lg" variant="outline">Pelajari Lebih</Button>
+            <Button size="lg" className="rounded-full">Pelajari Lebih</Button>
           </a>
         </div>
       </motion.section>
 
       {/* TENTANG */}
       <section id="tentang" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="mb-3 text-center text-3xl font-bold text-ink">🧠 Tentang SehatJiwa</h2>
-        <p className="mx-auto mb-10 max-w-xl text-center text-ink-muted">
+        <h2 className="mb-3 text-center text-3xl font-bold text-ink">Tentang SehatJiwa</h2>
+        <p className="mx-auto mb-10 max-w-xl text-center  text-ink-muted">
           Platform kesehatan mental all-in-one yang dirancang untuk membantumu
           memahami dan menjaga kesehatan mental dengan cara yang mudah dan personal.
         </p>
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">🌱 Mental Health untuk Semua</h3>
-            <p className="text-ink-muted">
-              SehatJiwa hadir sebagai teman setia dalam perjalanan kesehatan
+            <h3 className="text-xl font-bold">Mental Health untuk Semua</h3>
+            <p className="text-sm italic text-ink-muted">
+              <strong>Sehat Jiwa</strong> hadir sebagai teman setia dalam perjalanan kesehatan
               mentalmu. Kami percaya setiap orang berhak mendapatkan akses ke
               alat dan informasi yang membantu mereka merasa lebih baik.
-            </p>
-            <p className="text-ink-muted">
-              Dengan kombinasi <strong>kecerdasan buatan (AI)</strong>,{" "}
-              <strong>jurnal harian</strong>, <strong>perpustakaan edukasi</strong>,
-              dan <strong>tes screening</strong>, kami ingin membuat perawatan
+              Dengan kombinasi kecerdasan buatan (AI),{" "}
+              jurnal harian,perpustakaan edukasi,
+              dan tes screening,kami ingin membuat perawatan
               kesehatan mental lebih mudah diakses oleh semua orang.
             </p>
             <p className="text-sm italic text-ink-muted">
-              ⚠️ SehatJiwa bukan pengganti profesional medis. Jika darurat,
-              hubungi psikolog terdekat.
+              <strong>SehatJiwa bukan pengganti profesional medis. Jika darurat,
+              hubungi psikolog terdekat.</strong>
             </p>
           </div>
           <div className="flex h-64 items-center justify-center rounded-xl bg-primary-lighter text-6xl">
@@ -109,37 +118,56 @@ export default function LandingPage() {
       </section>
 
       {/* KENAPA */}
-      <section id="kenapa" className="bg-white py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="mb-3 text-center text-3xl font-bold text-ink">❓ Kenapa SehatJiwa?</h2>
-          <p className="mx-auto mb-10 max-w-xl text-center text-ink-muted">
-            Ada banyak alasan kenapa kamu harus memilih SehatJiwa sebagai teman
-            perjalanan kesehatan mentalmu.
-          </p>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {whyItems.map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: (i % 3) * 0.08 }}
-                className="rounded-xl border border-primary-lighter bg-primary-bg p-6 transition-transform hover:-translate-y-1"
-              >
-                <item.icon className="mb-3 h-8 w-8 text-primary" />
-                <h4 className="mb-1 font-bold">{item.title}</h4>
-                <p className="text-sm text-ink-muted">{item.desc}</p>
-              </motion.div>
-            ))}
+        <section id="kenapa" className="bg-linear-to-b from-white to-primary-bg/10 py-20 relative overflow-hidden">
+          {/* Pola latar belakang samar untuk kedalaman */}
+          <div className="absolute inset-0 opacity-10 blur-3xl pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-primary-lighter/40" />
+            <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-secondary-lighter/30" />
           </div>
-        </div>
-      </section>
+
+          <div className="mx-auto max-w-6xl px-6 relative">
+            <h2 className="mb-4 text-center text-3xl font-extrabold text-ink">Kenapa SehatJiwa?</h2>
+            <p className="mx-auto mb-12 max-w-xl text-center text-ink-muted/90 text-lg leading-relaxed">
+              Ada banyak alasan kenapa kamu harus memilih SehatJiwa sebagai teman perjalanan kesehatan mentalmu.
+            </p>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {whyItems.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{
+                    type: "spring",
+                    damping: 18,
+                    stiffness: 120,
+                    delay: i * 0.1, // Stagger delay per item
+                  }}
+                  className="group rounded-lg border border-primary/10 bg-white p-7 shadow-sm transition-all hover:border-primary/20 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] relative"
+                >
+                  {/* Efek partikel kecil di sudut saat hover */}
+                  <div className="absolute -top-1.5 -left-1.5 h-3 w-3 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute -bottom-1.5 -right-1.5 h-3 w-3 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  {/* Container Ikon */}
+                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                    <item.icon className="h-6 w-6 transition-transform group-hover:scale-110" />
+                  </div>
+
+                  <h4 className="mb-2.5 text-lg font-bold">{item.title}</h4>
+                  <p className="text-sm text-ink-muted/90 leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
       {/* CARA PENGGUNAAN */}
       <section id="cara" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="mb-3 text-center text-3xl font-bold text-ink">📖 Cara Penggunaan</h2>
+        <h2 className="mb-3 text-center text-3xl font-bold text-ink">Cara Penggunaan</h2>
         <p className="mx-auto mb-10 max-w-xl text-center text-ink-muted">
-          Ikuti 4 langkah mudah ini untuk mulai menggunakan SehatJiwa.
+          Ikuti 4 langkah ini untuk mulai menggunakan Website SehatJiwa.
         </p>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
@@ -157,11 +185,11 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-16">
         <div className="rounded-xl bg-gradient-to-br from-primary to-secondary px-8 py-12 text-center text-white shadow-softLg">
-          <h2 className="mb-2 text-3xl font-bold">🎯 Siap Jaga Kesehatan Mentalmu?</h2>
-          <p className="mb-6 opacity-90">Mulai sekarang dan rasakan perbedaannya. Gratis dan mudah!</p>
+          <h2 className="mb-2 text-3xl font-bold">Siap Membantu Menjaga Kesehatan Mentalmu?</h2>
+          <p className="mb-6 opacity-90">daftarkan akunmu sekarang. Gratis dan mudah!</p>
           <Link href="/register">
             <Button size="lg" className="bg-white text-primary hover:bg-primary-bg">
-              🚀 Masuk / Daftar Sekarang
+              Masuk / Daftar Sekarang
             </Button>
           </Link>
         </div>
@@ -169,11 +197,12 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="border-t border-primary-lighter bg-white py-8 text-center text-sm text-ink-muted">
-        <p>🌿 SehatJiwa &copy; 2026 — Dibuat dengan ❤️ untuk kesehatan mentalmu.</p>
+        <p>SehatJiwa &copy; 2026 — Informatika Angkatan 2024 </p>
         <p className="mt-1 text-xs">
-          ⚠️ AI ini bukan pengganti profesional medis. Jika darurat, hubungi psikolog terdekat.
+          AI ini bukan menggantikan profesional medis.tetapi mempermudahkan dalam ilmu medis.
         </p>
       </footer>
     </>
+    </main>
   );
 }
