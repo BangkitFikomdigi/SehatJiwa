@@ -14,7 +14,7 @@ export default function AiChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "model",
-      text: "Hai, aku Kawan MindMe 🌱 Aku di sini untuk mendengarkan. Ada yang ingin kamu ceritakan hari ini?",
+      text: "Hai, aku Kawan MindMe Aku di sini untuk mendengarkan. Ada yang ingin kamu ceritakan hari ini?",
     },
   ]);
   const [input, setInput] = useState("");
