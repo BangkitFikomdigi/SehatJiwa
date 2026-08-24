@@ -1,7 +1,15 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "MindMe - Kesehatan Mental",
@@ -18,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className="font-sans">
+      <body className={`${plusJakartaSans.variable} font-sans`}>
         {children}
         <Toaster position="top-center" richColors />
       </body>

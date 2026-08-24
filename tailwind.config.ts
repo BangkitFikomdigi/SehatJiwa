@@ -34,7 +34,7 @@ const config: Config = {
         softLg: "0 12px 48px rgba(37, 99, 235, 0.18)",
       },
       fontFamily: {
-        sans: ["Segoe UI", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["var(--font-sans)", "Segoe UI", "system-ui", "-apple-system", "sans-serif"],
       },
       keyframes: {
         fadeUp: {
