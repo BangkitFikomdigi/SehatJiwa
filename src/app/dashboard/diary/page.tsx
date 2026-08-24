@@ -161,8 +161,8 @@ export default function DiaryPage() {
                   <XAxis dataKey="date" fontSize={12} stroke="#64748b" />
                   <YAxis domain={[0, 10]} fontSize={12} stroke="#64748b" />
                   <Tooltip />
-                  <Line type="monotone" dataKey="Mood" stroke="#2563eb" strokeWidth={2} />
-                  <Line type="monotone" dataKey="Stres" stroke="#06b6d4" strokeWidth={2} />
+                  <Line type="monotone" dataKey="Mood" stroke="#4a90e2" strokeWidth={2} />
+                  <Line type="monotone" dataKey="Stres" stroke="#22c55e" strokeWidth={2} />
                   <Line type="monotone" dataKey="Tidur" stroke="#f59e0b" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>

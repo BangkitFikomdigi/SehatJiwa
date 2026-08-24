@@ -14,7 +14,7 @@ export default function AiChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "model",
-      text: "Hai, aku Kawan SehatJiwa 🌱 Aku di sini untuk mendengarkan. Ada yang ingin kamu ceritakan hari ini?",
+      text: "Hai, aku Kawan MindMe 🌱 Aku di sini untuk mendengarkan. Ada yang ingin kamu ceritakan hari ini?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -52,7 +52,7 @@ export default function AiChatPage() {
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-3xl flex-col">
       <div className="mb-4">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-ink">
-          <Bot className="h-6 w-6 text-primary" /> Kawan SehatJiwa
+          <Bot className="h-6 w-6 text-primary" /> Kawan MindMe
         </h1>
         <p className="text-sm text-ink-muted">
           Ditenagai Google Cloud AI · Bukan pengganti profesional medis.
@@ -90,7 +90,7 @@ export default function AiChatPage() {
           </AnimatePresence>
           {loading && (
             <div className="flex items-center gap-2 text-sm text-ink-muted">
-              <Bot className="h-4 w-4 animate-pulse text-primary" /> Kawan SehatJiwa sedang mengetik...
+              <Bot className="h-4 w-4 animate-pulse text-primary" /> Kawan MindMe sedang mengetik...
             </div>
           )}
           <div ref={bottomRef} />

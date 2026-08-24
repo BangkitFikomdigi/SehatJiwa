@@ -101,7 +101,7 @@ export default async function DashboardHome() {
             <Bot className="h-5 w-5 text-primary" /> Ngobrol dengan AI
           </div>
           <p className="mb-4 text-sm text-ink-muted">
-            Butuh teman cerita? Kawan SehatJiwa siap mendengarkan kapan saja,
+            Butuh teman cerita? Kawan MindMe siap mendengarkan kapan saja,
             dengan empati dan tanpa menghakimi.
           </p>
           <Link href="/dashboard/ai">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -12,7 +13,6 @@ import {
   ClipboardCheck,
   Settings,
   LogOut,
-  Leaf,
 } from "lucide-react";
 
 const menu = [
@@ -39,7 +39,8 @@ export function Sidebar({ userEmail, userName }: { userEmail: string; userName: 
   return (
     <aside className="sticky top-0 z-40 flex h-auto w-full shrink-0 flex-col border-b border-primary/10 bg-white p-4 md:h-screen md:w-60 md:flex-col md:border-b-0 md:border-r md:p-6">
       <Link href="/dashboard" className="mb-3 flex items-center gap-2 text-xl font-extrabold text-primary md:mb-8">
-        <Leaf className="h-5 w-5" /> Sehat<span className="text-secondary">Jiwa</span>
+        <Image src="/logo.png" alt="MindMe" width={28} height={28} className="h-7 w-7" />
+        Mind<span className="text-secondary">Me</span>
       </Link>
 
       <ul className="flex flex-wrap gap-1 md:flex-1 md:flex-col md:flex-nowrap md:space-y-1 md:gap-0">

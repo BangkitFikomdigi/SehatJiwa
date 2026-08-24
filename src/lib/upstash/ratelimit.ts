@@ -7,7 +7,7 @@ export const aiRateLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(15, "1 m"),
   analytics: true,
-  prefix: "sehatjiwa:ai",
+  prefix: "mindme:ai",
 });
 
 // Cache ringan untuk konten Perpustakaan Psikologi (artikel) selama 1 jam.

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Leaf, Mail, Lock } from "lucide-react";
+import Image from "next/image";
+import { Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +45,8 @@ export default function LoginPage() {
         className="w-full max-w-md rounded-xl bg-white p-8 shadow-softLg"
       >
         <Link href="/" className="mb-6 flex items-center justify-center gap-2 text-2xl font-extrabold text-primary">
-          <Leaf className="h-6 w-6" /> Sehat<span className="text-secondary">Jiwa</span>
+          <Image src="/logo.png" alt="MindMe" width={28} height={28} className="h-7 w-7" />
+          Mind<span className="text-secondary">Me</span>
         </Link>
         <h1 className="mb-1 text-center text-xl font-bold text-ink">Selamat datang kembali</h1>
         <p className="mb-6 text-center text-sm text-ink-muted">

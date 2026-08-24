@@ -7,7 +7,7 @@ html {
 }
 
 body {
-  background: #f0f6ff;
+  background: #ffffff;
   color: #0a1a2e;
 }
 
@@ -15,15 +15,15 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #dbeafe;
+  background: #dcfce7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #60a5fa;
+  background: #4a90e2;
   border-radius: 10px;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  background: linear-gradient(135deg, #4a90e2, #4ade80);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

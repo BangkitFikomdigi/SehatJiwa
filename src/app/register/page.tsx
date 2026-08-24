@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Leaf, Mail, Lock, User } from "lucide-react";
+import Image from "next/image";
+import { Mail, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,11 +53,12 @@ export default function RegisterPage() {
         className="w-full max-w-md rounded-xl bg-white p-8 shadow-softLg"
       >
         <Link href="/" className="mb-6 flex items-center justify-center gap-2 text-2xl font-extrabold text-primary">
-          <Leaf className="h-6 w-6" /> Sehat<span className="text-secondary">Jiwa</span>
+          <Image src="/logo.png" alt="MindMe" width={28} height={28} className="h-7 w-7" />
+          Mind<span className="text-secondary">Me</span>
         </Link>
         <h1 className="mb-1 text-center text-xl font-bold text-ink">Buat akun baru </h1>
         <p className="mb-6 text-center text-sm text-ink-muted">
-          Mulai jaga kesehatan mentalmu bersama SehatJiwa.
+          Mulai jaga kesehatan mentalmu bersama MindMe.
         </p>
 
         <form onSubmit={handleRegister} className="space-y-4">

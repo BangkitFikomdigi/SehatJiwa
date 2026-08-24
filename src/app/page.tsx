@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Bot,
@@ -10,7 +11,8 @@ import {
   Lock,
   LineChart,
   Smartphone,
-  Leaf,
+  HeartPulse,
+  ArrowRight,
 } from "lucide-react";
 
 const whyItems = [
@@ -39,7 +41,8 @@ export default function LandingPage() {
           
           {/* 1. BAGIAN KIRI: Logo */}
           <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold text-primary">
-            <Leaf className="h-6 w-6" /> Sehat<span className="text-secondary">Jiwa</span>
+            <Image src="/logo.png" alt="MindMe" width={32} height={32} className="h-8 w-8" priority />
+            Mind<span className="text-secondary">Me</span>
           </Link>
           {/* 2. BAGIAN TENGAH: Menu Navigasi */}
           <ul className="hidden flex-1 items-center justify-center gap-8 md:flex">
@@ -71,7 +74,7 @@ export default function LandingPage() {
       >
         <h1 className="mb-4 text-4xl font-extrabold leading-tight text-ink md:text-5xl">
           Jaga Kesehatan Mentalmu <br />
-          dengan <span className="text-gradient">SehatJiwa</span> 🌱
+          dengan <span className="text-gradient">MindMe</span> 🌱
         </h1>
         <p className="mx-auto mb-8 max-w-xl text-lg text-ink-muted">
           Temani harimu dengan AI, catat mood, baca artikel psikologi, dan
@@ -89,7 +92,7 @@ export default function LandingPage() {
 
       {/* TENTANG */}
       <section id="tentang" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="mb-3 text-center text-3xl font-bold text-ink">Tentang SehatJiwa</h2>
+        <h2 className="mb-3 text-center text-3xl font-bold text-ink">Tentang MindMe</h2>
         <p className="mx-auto mb-10 max-w-xl text-center  text-ink-muted">
           Platform kesehatan mental all-in-one yang dirancang untuk membantumu
           memahami dan menjaga kesehatan mental dengan cara yang mudah dan personal.
@@ -98,7 +101,7 @@ export default function LandingPage() {
           <div className="space-y-4">
             <h3 className="text-xl font-bold">Mental Health untuk Semua</h3>
             <p className="text-sm italic text-ink-muted">
-              <strong>Sehat Jiwa</strong> hadir sebagai teman setia dalam perjalanan kesehatan
+              <strong>Mind Me</strong> hadir sebagai teman setia dalam perjalanan kesehatan
               mentalmu. Kami percaya setiap orang berhak mendapatkan akses ke
               alat dan informasi yang membantu mereka merasa lebih baik.
               Dengan kombinasi kecerdasan buatan (AI),{" "}
@@ -107,7 +110,7 @@ export default function LandingPage() {
               kesehatan mental lebih mudah diakses oleh semua orang.
             </p>
             <p className="text-sm italic text-ink-muted">
-              <strong>SehatJiwa bukan pengganti profesional medis. Jika darurat,
+              <strong>MindMe bukan pengganti profesional medis. Jika darurat,
               hubungi psikolog terdekat.</strong>
             </p>
           </div>
@@ -118,18 +121,15 @@ export default function LandingPage() {
       </section>
 
       {/* KENAPA */}
-        <section id="kenapa" className="bg-linear-to-b from-white to-primary-bg/10 py-20 relative overflow-hidden">
+        <section id="kenapa" className="relative overflow-hidden bg-gradient-to-br from-primary via-[#3fa9db] to-secondary py-20">
           {/* Pola latar belakang samar untuk kedalaman */}
-          <div className="absolute inset-0 opacity-10 blur-3xl pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-primary-lighter/40" />
-            <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-secondary-lighter/30" />
+          <div className="pointer-events-none absolute inset-0 opacity-30 blur-3xl">
+            <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-white/30" />
+            <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-white/20" />
           </div>
 
           <div className="mx-auto max-w-6xl px-6 relative">
-            <h2 className="mb-4 text-center text-3xl font-extrabold text-ink">Kenapa SehatJiwa?</h2>
-            <p className="mx-auto mb-12 max-w-xl text-center text-ink-muted/90 text-lg leading-relaxed">
-              Ada banyak alasan kenapa kamu harus memilih SehatJiwa sebagai teman perjalanan kesehatan mentalmu.
-            </p>
+            <h2 className="mb-14 text-center text-4xl font-extrabold text-white sm:text-5xl">Kenapa MindMe?</h2>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {whyItems.map((item, i) => (
@@ -138,21 +138,40 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 24, scale: 0.95 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true }}
+                  whileHover={{
+                    y: -10,
+                    scale: 1.04,
+                    rotate: i % 2 === 0 ? -1.5 : 1.5,
+                  }}
                   transition={{
                     type: "spring",
                     damping: 18,
                     stiffness: 120,
                     delay: i * 0.1, // Stagger delay per item
                   }}
-                  className="group rounded-lg border border-primary/10 bg-white p-7 shadow-sm transition-all hover:border-primary/20 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] relative"
+                  className={`group cursor-pointer rounded-lg border border-white/40 bg-white/95 p-7 shadow-lg backdrop-blur-sm transition-shadow relative hover:border-white ${
+                    i % 3 === 0
+                      ? "hover:shadow-[0_20px_45px_-10px_rgba(74,144,226,0.55)]"
+                      : i % 3 === 1
+                      ? "hover:shadow-[0_20px_45px_-10px_rgba(34,197,94,0.5)]"
+                      : "hover:shadow-2xl"
+                  }`}
                 >
                   {/* Efek partikel kecil di sudut saat hover */}
                   <div className="absolute -top-1.5 -left-1.5 h-3 w-3 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute -bottom-1.5 -right-1.5 h-3 w-3 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   {/* Container Ikon */}
-                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                    <item.icon className="h-6 w-6 transition-transform group-hover:scale-110" />
+                  <div
+                    className={`relative mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-lg ${
+                      i % 3 === 0
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/15 group-hover:bg-primary group-hover:text-white group-hover:ring-primary"
+                        : i % 3 === 1
+                        ? "bg-secondary/15 text-secondary-dark ring-1 ring-secondary/20 group-hover:bg-secondary group-hover:text-white group-hover:ring-secondary"
+                        : "border border-ink/10 bg-white text-ink ring-1 ring-ink/5 group-hover:bg-ink group-hover:text-white group-hover:ring-ink"
+                    }`}
+                  >
+                    <item.icon className="h-7 w-7 transition-transform duration-300 group-hover:scale-110" />
                   </div>
 
                   <h4 className="mb-2.5 text-lg font-bold">{item.title}</h4>
@@ -167,7 +186,7 @@ export default function LandingPage() {
       <section id="cara" className="mx-auto max-w-6xl px-6 py-16">
         <h2 className="mb-3 text-center text-3xl font-bold text-ink">Cara Penggunaan</h2>
         <p className="mx-auto mb-10 max-w-xl text-center text-ink-muted">
-          Ikuti 4 langkah ini untuk mulai menggunakan Website SehatJiwa.
+          Ikuti 4 langkah ini untuk mulai menggunakan Website MindMe.
         </p>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
@@ -184,20 +203,45 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-16">
-        <div className="rounded-xl bg-gradient-to-br from-primary to-secondary px-8 py-12 text-center text-white shadow-softLg">
-          <h2 className="mb-2 text-3xl font-bold">Siap Membantu Menjaga Kesehatan Mentalmu?</h2>
-          <p className="mb-6 opacity-90">daftarkan akunmu sekarang. Gratis dan mudah!</p>
-          <Link href="/register">
-            <Button size="lg" className="bg-white text-primary hover:bg-primary-bg">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", damping: 18, stiffness: 100 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-[#3fa9db] to-secondary px-8 py-14 text-center text-white shadow-softLg sm:py-16"
+        >
+          {/* Dekorasi blob blur */}
+          <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-3xl" />
+
+          {/* Ikon dekoratif */}
+          <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
+            <HeartPulse className="h-7 w-7 text-white" />
+          </div>
+
+          <h2 className="relative mb-2 text-3xl font-extrabold sm:text-4xl">
+            Siap Membantu Menjaga Kesehatan Mentalmu?
+          </h2>
+          <p className="relative mb-8 text-base opacity-90 sm:text-lg">
+            daftarkan akunmu sekarang. Gratis dan mudah!
+          </p>
+
+          <Link href="/register" className="relative inline-block">
+            <Button
+              size="lg"
+              className="group gap-2 rounded-full bg-white px-8 py-6 text-base font-semibold text-primary shadow-lg transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
+            >
               Masuk / Daftar Sekarang
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* FOOTER */}
       <footer className="border-t border-primary-lighter bg-white py-8 text-center text-sm text-ink-muted">
-        <p>SehatJiwa &copy; 2026 — Informatika Angkatan 2024 </p>
+        <p>MindMe &copy; 2026 — Informatika Angkatan 2024 </p>
         <p className="mt-1 text-xs">
           AI ini bukan menggantikan profesional medis.tetapi mempermudahkan dalam ilmu medis.
         </p>
