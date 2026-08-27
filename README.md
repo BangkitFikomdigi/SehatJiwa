@@ -22,7 +22,9 @@ production-ready.
 | **React 18** | UI library |
 | **Tailwind CSS** | Styling, mengikuti token warna dari mockup (`primary #2563eb`, dst) |
 | **Shadcn UI (pola)** | Komponen `Button`, `Card`, `Input`, dsb di `src/components/ui` |
-| **Supabase** | Auth (email/password) + Database Postgres (diary, chat history, hasil screening) + RLS |
+| **PostgreSQL (local)** | Database (diary, chat history, hasil screening) |
+| **Drizzle ORM** | Query builder & migration ke Postgres, type-safe |
+| **Better Auth** | Auth (email/password), session disimpan di Postgres |
 | **Upstash** | Redis untuk rate-limit chat AI (15 pesan/menit) & cache artikel Perpustakaan |
 | **Google Cloud AI (Gemini API)** | Model `gemini-1.5-flash` untuk fitur "Kawan SehatJiwa" (AI chat empatik) |
 | **Motion (Framer Motion)** | Animasi fade-in, transisi chat, hover card |
@@ -36,16 +38,42 @@ cp .env.example .env.local
 
 Isi `.env.local` dengan kredensial kamu (lihat bagian di bawah).
 
-## 2. Setup Supabase
+## 2. Setup PostgreSQL local
 
-1. Buat project baru di https://supabase.com
-2. Buka **SQL Editor** → jalankan isi file `supabase/schema.sql` (membuat tabel
-   `mood_entries`, `ai_messages`, `screening_results` + Row Level Security).
-3. Buka **Project Settings → API**, salin:
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` key → `SUPABASE_SERVICE_ROLE_KEY` (opsional, untuk operasi admin)
-4. Di **Authentication → Providers**, pastikan Email provider aktif.
+Paling gampang pakai Docker (kalau belum punya Postgres native ter-install):
+
+```bash
+docker compose up -d
+```
+
+Ini akan menjalankan Postgres di `localhost:5432` dengan user/password/db
+`sehatjiwa` (lihat `docker-compose.yml`). Kalau kamu sudah punya Postgres
+sendiri, cukup sesuaikan `DATABASE_URL` di `.env.local`.
+
+Generate secret untuk Better Auth:
+
+```bash
+openssl rand -base64 32
+```
+
+Isi hasilnya ke `BETTER_AUTH_SECRET` di `.env.local`.
+
+Setelah `DATABASE_URL` terisi, push schema Drizzle ke database (tabel
+`user`, `session`, `account`, `verification` dari Better Auth + tabel
+aplikasi `mood_entries`, `ai_messages`, `screening_results`):
+
+```bash
+npm run db:push
+```
+
+(Untuk workflow migration file berversi, pakai `npm run db:generate` lalu
+terapkan lewat migrator Drizzle. `db:push` cukup untuk dev cepat.)
+
+Cek isi database kapan saja dengan Drizzle Studio:
+
+```bash
+npm run db:studio
+```
 
 ## 3. Setup Upstash
 
@@ -82,6 +110,7 @@ src/
       library/page.tsx         → Perpustakaan Psikologi (cache Upstash)
       screening/page.tsx       → PHQ-9 & GAD-7
     api/
+      auth/[...all]/route.ts    → Handler Better Auth (sign-in, sign-up, session, dst)
       ai/chat/route.ts         → Endpoint chat AI
       diary/route.ts           → CRUD mood entries
       screening/route.ts       → Simpan hasil tes
@@ -90,11 +119,15 @@ src/
     ui/                        → Button, Card, Input, dst (pola Shadcn)
     dashboard/sidebar.tsx       → Sidebar 4 menu
   lib/
-    supabase/                  → client/server/middleware
+    db/schema.ts                → Skema Drizzle (tabel Better Auth + tabel aplikasi)
+    db/index.ts                  → Koneksi Drizzle ke Postgres
+    auth.ts                      → Konfigurasi Better Auth (server)
+    auth-client.ts                → Client Better Auth (dipakai di komponen)
     upstash/                   → redis client + rate limiter + cache
     ai/gemini.ts                → wrapper Google Generative AI
-  middleware.ts                 → proteksi route /dashboard/*
-supabase/schema.sql              → skema database + RLS
+  middleware.ts                 → proteksi route /dashboard/* (cek session cookie)
+drizzle.config.ts                → konfigurasi drizzle-kit
+docker-compose.yml                → Postgres local untuk dev
 ```
 
 ## Deploy
