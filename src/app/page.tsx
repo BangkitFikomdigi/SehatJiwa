@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,10 @@ import {
   MousePointerClick,
   Sparkles,
   TrendingUp,
+  Brain,
+  Leaf,
+  Heart,
+  ShieldCheck,
 } from "lucide-react";
 
 const whyItems = [
@@ -30,8 +34,8 @@ const whyItems = [
 ];
 
 const team = [
-  { photo: "/team/Upin.jpeg", initials: "A1", handle: "@nama.anggota1", name: "Nama Anggota 1", role: "Fullstack Developer", color: "bg-blue-600", from: "from-blue-500", to: "to-indigo-500" },
-  { photo: "/team/ipin.jpeg", initials: "A2", handle: "@nama.anggota2", name: "Nama Anggota 2", role: "UI/UX Designer", color: "bg-emerald-600", from: "from-emerald-500", to: "to-teal-500" },
+  { photo: "/team/Upin.jpeg", initials: "A1", handle: "@banglundong", name: "Annas Khoirul Amri", role: "Frontend Developer", color: "bg-blue-600", from: "from-blue-500", to: "to-indigo-500" },
+  { photo: "/team/ipin.jpeg", initials: "A2", handle: "@nama.anggota2", name: "Caesar Ryo Firza Suprapto", role: "Backend Developer", color: "bg-emerald-600", from: "from-emerald-500", to: "to-teal-500" },
   { photo: "/team/apin.jpeg", initials: "A3", handle: "@wawa.nwaa", name: "Nazwa Arifin", role: "Backend Developer", color: "bg-orange-500", from: "from-amber-500", to: "to-orange-500" },
   { photo: "/team/nana.jpeg", initials: "A4", handle: "@rchldrgn", name: "Shulha Diyana", role: "Frontend Developer", color: "bg-violet-600", from: "from-violet-500", to: "to-purple-500" },
 ];
@@ -45,6 +49,35 @@ const steps = [
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const showcaseRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: showcaseProgress } = useScroll({
+    target: showcaseRef,
+    offset: ["start 90%", "center 40%"],
+  });
+  const showcaseMockupY = useTransform(showcaseProgress, [0, 1], [120, 0]);
+  const showcaseMockupScale = useTransform(showcaseProgress, [0, 1], [0.9, 1]);
+  const showcaseMockupRotateX = useTransform(showcaseProgress, [0, 1], [18, 0]);
+  const showcaseHeadingY = useTransform(showcaseProgress, [0, 1], [40, 0]);
+  const showcaseHeadingOpacity = useTransform(showcaseProgress, [0, 0.6], [0, 1]);
+  const [moodRange, setMoodRange] = useState<"3bulan" | "30hari" | "7hari">("3bulan");
+
+  const moodPaths: Record<string, { area: string; line: string; points: { x: number; y: number }[] }> = {
+    "3bulan": {
+      area: "M0,220 C80,220 100,120 180,120 C260,120 280,220 360,220 C440,220 460,60 540,60 C620,60 640,190 720,190 C760,190 780,150 800,150 L800,300 L0,300 Z",
+      line: "M0,220 C80,220 100,120 180,120 C260,120 280,220 360,220 C440,220 460,60 540,60 C620,60 640,190 720,190 C760,190 780,150 800,150",
+      points: [{ x: 0, y: 220 }, { x: 180, y: 120 }, { x: 360, y: 220 }, { x: 540, y: 60 }, { x: 720, y: 190 }, { x: 800, y: 150 }],
+    },
+    "30hari": {
+      area: "M0,180 C60,150 100,90 160,90 C220,90 240,180 300,190 C380,200 420,80 500,70 C580,60 620,160 680,170 C730,178 770,120 800,110 L800,300 L0,300 Z",
+      line: "M0,180 C60,150 100,90 160,90 C220,90 240,180 300,190 C380,200 420,80 500,70 C580,60 620,160 680,170 C730,178 770,120 800,110",
+      points: [{ x: 0, y: 180 }, { x: 160, y: 90 }, { x: 300, y: 190 }, { x: 500, y: 70 }, { x: 680, y: 170 }, { x: 800, y: 110 }],
+    },
+    "7hari": {
+      area: "M0,140 C50,160 90,60 150,60 C210,60 250,180 320,180 C400,180 440,40 520,40 C590,40 640,150 700,150 C740,150 770,90 800,90 L800,300 L0,300 Z",
+      line: "M0,140 C50,160 90,60 150,60 C210,60 250,180 320,180 C400,180 440,40 520,40 C590,40 640,150 700,150 C740,150 770,90 800,90",
+      points: [{ x: 0, y: 140 }, { x: 150, y: 60 }, { x: 320, y: 180 }, { x: 520, y: 40 }, { x: 700, y: 150 }, { x: 800, y: 90 }],
+    },
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -80,9 +113,18 @@ export default function LandingPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold text-primary">
-                <Image src="/logo.png" alt="MindMe" width={32} height={32} className="h-8 w-8" priority />
-                Mind<span className="text-secondary">Me</span>
+              <Link href="/" className="group flex items-center gap-2.5 text-4xl font-extrabold text-primary">
+                <motion.span
+                  whileHover={{ rotate: -10, scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                  className="relative flex items-center justify-center"
+                >
+                  <span className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <Image src="/logo.png" alt="MindMe" width={44} height={44} className="relative h-11 w-11 drop-shadow-sm" priority />
+                </motion.span>
+                <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-[length:200%_auto] bg-clip-text text-transparent transition-[background-position] duration-500 group-hover:bg-[position:100%_center]">
+                  Mind<span className="text-secondary">Me</span>
+                </span>
               </Link>
             </motion.div>
             {/* 2. BAGIAN TENGAH: Menu Navigasi */}
@@ -92,10 +134,26 @@ export default function LandingPage() {
               transition={{ delay: 0.55, duration: 0.5 }}
               className="hidden flex-1 items-center justify-center gap-8 md:flex"
             >
-              <li><a href="#tentang" className="text-sm font-medium text-ink transition-colors hover:text-primary">Tentang</a></li>
-              <li><a href="#kenapa" className="text-sm font-medium text-ink transition-colors hover:text-primary">Kenapa Kita</a></li>
-              <li><a href="#cara" className="text-sm font-medium text-ink transition-colors hover:text-primary">Cara Penggunaan</a></li>
-              <li><a href="#profil" className="text-sm font-medium text-ink transition-colors hover:text-primary">Profil</a></li>
+              <li>
+                <a href="#tentang" className="relative rounded-full px-4 py-2 text-base font-medium text-ink transition-all duration-300 hover:bg-primary/10 hover:text-primary">
+                  Tentang
+                </a>
+              </li>
+              <li>
+                <a href="#kenapa" className="relative rounded-full px-4 py-2 text-base font-medium text-ink transition-all duration-300 hover:bg-primary/10 hover:text-primary">
+                  Kenapa Kita
+                </a>
+              </li>
+              <li>
+                <a href="#cara" className="relative rounded-full px-4 py-2 text-base font-medium text-ink transition-all duration-300 hover:bg-primary/10 hover:text-primary">
+                  Cara Penggunaan
+                </a>
+              </li>
+              <li>
+                <a href="#profil" className="relative rounded-full px-4 py-2 text-base font-medium text-ink transition-all duration-300 hover:bg-primary/10 hover:text-primary">
+                  Profil
+                </a>
+              </li>
             </motion.ul>
 
             {/* 3. BAGIAN KANAN: Tombol Auth */}
@@ -105,8 +163,10 @@ export default function LandingPage() {
               transition={{ delay: 0.4, duration: 0.5 }}
               className="hidden items-center gap-6 md:flex"
             >
-              <Link href="/login" className="text-sm font-medium text-ink transition-colors hover:text-primary">Masuk</Link>
-              <Link href="/register"><Button size="sm">Daftar</Button></Link>
+              <Link href="/login" className="text-sm font-medium text-ink transition-all duration-200 hover:scale-105 hover:text-primary">Masuk</Link>
+              <Link href="/register">
+                <Button size="sm" className="transition-transform duration-200 hover:scale-105 active:scale-95">Daftar</Button>
+              </Link>
             </motion.div>
 
             {/* Tombol Daftar Mobile */}
@@ -164,13 +224,13 @@ export default function LandingPage() {
           jurnal harian, dan tes screening untuk kesehatan mental yang lebih baik.
         </p>
 
-        {/* Kartu showcase AI chat */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative mx-auto max-w-2xl"
-        >
+        {/* AI Chat Showcase Card */}
+<motion.div
+  initial={{ opacity: 0, y: 24 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 0.2 }}
+  className="relative mx-auto max-w-3xl w-full"
+>
           {/* Glow gradien di belakang kartu */}
           <div className="absolute -inset-1.5 rounded-[30px] bg-gradient-to-r from-primary via-secondary to-primary opacity-30 blur-xl" />
 
@@ -225,33 +285,257 @@ export default function LandingPage() {
       </motion.section>
       </div>
 
+      {/* SHOWCASE: Terus Pantau Kesehatan Mentalmu */}
+      <section ref={showcaseRef} className="relative overflow-hidden bg-white px-6 pb-24 pt-4" style={{ perspective: 1200 }}>
+        <motion.div
+          style={{ y: showcaseHeadingY, opacity: showcaseHeadingOpacity }}
+          className="mx-auto mb-6 max-w-3xl text-center"
+        >
+          <h2 className="text-lg font-bold text-ink sm:text-xl">
+            Terus pantau kesehatan mentalmu dengan
+          </h2>
+          <p className="mt-1 text-4xl font-extrabold leading-none text-gradient sm:text-5xl md:text-6xl">
+            MindMe
+          </p>
+        </motion.div>
+
+        <motion.div
+          style={{
+            y: showcaseMockupY,
+            scale: showcaseMockupScale,
+            rotateX: showcaseMockupRotateX,
+            transformPerspective: 1200,
+          }}
+          className="group relative mx-auto max-w-6xl"
+        >
+          {/* Glow di belakang frame, menyala saat hover */}
+          <div className="absolute -inset-2 rounded-[32px] bg-gradient-to-r from-primary via-secondary to-primary opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-30" />
+
+          {/* Frame browser gelap */}
+          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#1a1d21] p-2.5 shadow-softLg transition-shadow duration-500 group-hover:shadow-2xl sm:p-4">
+            {/* Bar browser */}
+            <div className="flex items-center gap-3 rounded-t-xl px-4 py-3.5 sm:px-5">
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className="h-3.5 w-3.5 rounded-full bg-white/20" />
+                <span className="h-3.5 w-3.5 rounded-full bg-white/20" />
+              </div>
+              <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-white/10 px-5 py-2">
+                <Lock className="h-4 w-4 text-white/60" />
+                <span className="text-sm font-medium text-white/70">mindme.app/dashboard</span>
+              </div>
+              <div className="hidden gap-3 text-white/50 sm:flex">
+                <Sparkles className="h-5 w-5" />
+              </div>
+            </div>
+
+            {/* Konten dashboard */}
+            <div className="rounded-2xl bg-primary-bg px-6 py-4 sm:px-10 sm:py-6">
+              <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-xl font-bold text-ink sm:text-2xl">Tren Mood Harian</h3>
+                  <p className="text-sm text-ink-muted sm:text-base">
+                    Rata-rata mood-mu selama{" "}
+                    {moodRange === "3bulan" ? "3 bulan" : moodRange === "30hari" ? "30 hari" : "7 hari"} terakhir
+                  </p>
+                </div>
+                <div className="flex gap-1.5 rounded-full bg-white p-1.5 shadow-sm">
+                  {([
+                    { key: "3bulan", label: "3 Bulan" },
+                    { key: "30hari", label: "30 Hari" },
+                    { key: "7hari", label: "7 Hari" },
+                  ] as const).map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setMoodRange(tab.key)}
+                      className={`relative rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${
+                        moodRange === tab.key ? "text-white" : "text-ink-muted hover:text-primary"
+                      }`}
+                    >
+                      {moodRange === tab.key && (
+                        <motion.span
+                          layoutId="moodTabActive"
+                          className="absolute inset-0 rounded-full bg-primary"
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <span className="relative">{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Grafik gelombang SVG interaktif */}
+              <div className="relative h-40 w-full overflow-hidden rounded-xl bg-white sm:h-56">
+                <svg viewBox="0 0 800 300" preserveAspectRatio="none" className="h-full w-full">
+                  <defs>
+                    <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.45" />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Garis grid horizontal */}
+                  {[60, 120, 180, 240].map((y) => (
+                    <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="#e2e8f0" strokeWidth="1" />
+                  ))}
+                  <motion.path
+                    key={`area-${moodRange}`}
+                    d={moodPaths[moodRange].area}
+                    fill="url(#moodGradient)"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <motion.path
+                    key={`line-${moodRange}`}
+                    d={moodPaths[moodRange].line}
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                  />
+                  {/* Titik data interaktif dengan tooltip */}
+                  {moodPaths[moodRange].points.map((pt, i) => (
+                    <g key={`${moodRange}-${i}`} className="group/point cursor-pointer">
+                      <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="6"
+                        fill="white"
+                        stroke="#2563eb"
+                        strokeWidth="3"
+                        className="opacity-0 transition-opacity duration-200 group-hover/point:opacity-100"
+                      />
+                      <g className="pointer-events-none opacity-0 transition-opacity duration-200 group-hover/point:opacity-100">
+                        <rect x={pt.x - 26} y={pt.y - 42} width="52" height="26" rx="8" fill="#0a1a2e" />
+                        <text x={pt.x} y={pt.y - 24} textAnchor="middle" fontSize="13" fill="white" fontWeight="600">
+                          {Math.round(100 - (pt.y / 300) * 100)}%
+                        </text>
+                      </g>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* TENTANG */}
-      <section id="tentang" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="mb-3 text-center text-3xl font-bold text-ink">Tentang MindMe</h2>
-        <p className="mx-auto mb-10 max-w-xl text-center  text-ink-muted">
-          Platform kesehatan mental all-in-one yang dirancang untuk membantumu
-          memahami dan menjaga kesehatan mental dengan cara yang mudah dan personal.
-        </p>
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold">Mental Health untuk Semua</h3>
-            <p className="text-sm italic text-ink-muted">
-              <strong>Mind Me</strong> hadir sebagai teman setia dalam perjalanan kesehatan
-              mentalmu. Kami percaya setiap orang berhak mendapatkan akses ke
-              alat dan informasi yang membantu mereka merasa lebih baik.
-              Dengan kombinasi kecerdasan buatan (AI),{" "}
-              jurnal harian,perpustakaan edukasi,
-              dan tes screening,kami ingin membuat perawatan
-              kesehatan mental lebih mudah diakses oleh semua orang.
+      <section id="tentang" className="relative overflow-hidden bg-[#f4f6f8] py-24">
+        {/* Kartu-kartu mockup UI tersebar di latar belakang */}
+        <div className="absolute inset-0 opacity-90">
+          {/* Kartu Login */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            animate={{ y: [0, -8, 0] }}
+            transition={{ y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }}
+            whileHover={{ rotate: 0, scale: 1.06, zIndex: 20 }}
+            className="pointer-events-auto absolute -left-6 top-6 hidden w-56 rotate-[-6deg] cursor-pointer rounded-2xl bg-white p-4 shadow-lg transition-shadow duration-300 hover:shadow-2xl sm:block"
+          >
+            <p className="mb-3 text-xs font-bold text-primary">Masuk akun MindMe</p>
+            <div className="mb-2 h-2 w-3/4 rounded-full bg-slate-100" />
+            <div className="mb-3 h-2 w-1/2 rounded-full bg-slate-100" />
+            <div className="h-7 w-full rounded-full bg-primary/90" />
+          </motion.div>
+
+          {/* Kartu Chat AI */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ y: { duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 } }}
+            whileHover={{ rotate: 0, scale: 1.06, zIndex: 20 }}
+            className="pointer-events-auto absolute right-2 top-2 w-64 rotate-[5deg] cursor-pointer rounded-2xl bg-white p-4 shadow-lg transition-shadow duration-300 hover:shadow-2xl sm:right-10 sm:top-8"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary">
+                <Bot className="h-3.5 w-3.5 text-white" />
+              </span>
+              <div className="h-2 w-20 rounded-full bg-slate-100" />
+            </div>
+            <div className="mb-2 h-2 w-full rounded-full bg-slate-100" />
+            <div className="h-2 w-2/3 rounded-full bg-slate-100" />
+          </motion.div>
+
+          {/* Kartu Screening */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            animate={{ y: [0, -9, 0] }}
+            transition={{ y: { duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 } }}
+            whileHover={{ rotate: 0, scale: 1.06, zIndex: 20 }}
+            className="pointer-events-auto absolute bottom-8 left-4 hidden w-60 rotate-[4deg] cursor-pointer rounded-2xl bg-white p-4 shadow-lg transition-shadow duration-300 hover:shadow-2xl sm:block"
+          >
+            <p className="mb-3 flex items-center gap-1.5 text-xs font-bold text-ink">
+              <ClipboardCheck className="h-3.5 w-3.5 text-primary" /> Tes Screening
             </p>
-            <p className="text-sm italic text-ink-muted">
-              <strong>MindMe bukan pengganti profesional medis. Jika darurat,
-              hubungi psikolog terdekat.</strong>
-            </p>
-          </div>
-          <div className="flex h-64 items-center justify-center rounded-xl bg-primary-lighter text-6xl">
-            🌿🧠
-          </div>
+            <div className="mb-2 h-2 w-full rounded-full bg-slate-100" />
+            <div className="mb-2 h-2 w-5/6 rounded-full bg-slate-100" />
+            <div className="h-6 w-24 rounded-full bg-primary/90" />
+          </motion.div>
+
+          {/* Kartu Mood Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            animate={{ y: [0, -7, 0] }}
+            transition={{ y: { duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 0.6 } }}
+            whileHover={{ rotate: 0, scale: 1.06, zIndex: 20 }}
+            className="pointer-events-auto absolute bottom-2 right-6 w-60 rotate-[-4deg] cursor-pointer rounded-2xl bg-white p-4 shadow-lg transition-shadow duration-300 hover:shadow-2xl sm:right-16"
+          >
+            <p className="mb-2 text-xs font-bold text-ink">Mood Harian</p>
+            <svg viewBox="0 0 200 60" className="h-12 w-full">
+              <path d="M0,45 C30,45 40,15 70,15 C100,15 110,50 140,50 C165,50 175,25 200,25" fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          </motion.div>
+        </div>
+
+        {/* Vignette putih supaya teks tetap terbaca */}
+        <div className="pointer-events-none absolute inset-0 bg-[#f4f6f8]/60" />
+
+        {/* Teks besar menimpa collage */}
+        <div className="relative mx-auto max-w-4xl px-6 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl font-extrabold leading-tight text-primary sm:text-5xl md:text-6xl"
+          >
+            MindMe hadir sebagai teman setia dalam perjalanan kesehatan mentalmu,
+            membantu kamu memahami diri dan mencapai kesejahteraan dengan lebih baik.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mx-auto mt-6 max-w-xl text-sm italic text-ink-muted sm:text-base"
+          >
+            <strong>MindMe bukan pengganti profesional medis. Jika darurat, hubungi psikolog terdekat.</strong>
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mt-8"
+          >
+            <Link href="/register">
+              <Button size="lg" className="rounded-full shadow-md transition-transform duration-200 hover:scale-105 active:scale-95">
+                Mulai Perjalananmu <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
@@ -363,44 +647,6 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-6 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ type: "spring", damping: 18, stiffness: 100 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-[#3fa9db] to-secondary px-8 py-14 text-center text-white shadow-softLg sm:py-16"
-        >
-          {/* Dekorasi blob blur */}
-          <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-3xl" />
-
-          {/* Ikon dekoratif */}
-          <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
-            <HeartPulse className="h-7 w-7 text-white" />
-          </div>
-
-          <h2 className="relative mb-2 text-3xl font-extrabold sm:text-4xl">
-            Siap Membantu Menjaga Kesehatan Mentalmu?
-          </h2>
-          <p className="relative mb-8 text-base opacity-90 sm:text-lg">
-            daftarkan akunmu sekarang. Gratis dan mudah!
-          </p>
-
-          <Link href="/register" className="relative inline-block">
-            <Button
-              size="lg"
-              className="group gap-2 rounded-full bg-white px-8 py-6 text-base font-semibold text-primary shadow-lg transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
-            >
-              Masuk / Daftar Sekarang
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
-        </motion.div>
       </section>
 
       {/* Profil pembuat */}
