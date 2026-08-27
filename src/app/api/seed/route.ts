@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { moodEntries, screeningResults, aiMessages } from "@/lib/db/schema";
 
 // Menghasilkan variasi angka yang natural (bukan garis lurus membosankan)
 function wobble(base: number, range: number) {
@@ -20,14 +24,11 @@ const diaryNotes = [
 ];
 
 export async function POST() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const session = await auth.api.getSession({ headers: headers() });
+  if (!session) {
     return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
   }
+  const userId = session.user.id;
 
   // ---------- 1. Seed 14 hari mood_entries ----------
   const moodRows = Array.from({ length: 14 }).map((_, i) => {
@@ -37,59 +38,46 @@ export async function POST() {
     date.setHours(20, 0, 0, 0);
 
     return {
-      user_id: user.id,
-      mood_score: wobble(6.5, 2.5),
-      stress_score: wobble(4.5, 2.5),
-      sleep_score: wobble(6, 2),
+      userId,
+      moodScore: wobble(6.5, 2.5),
+      stressScore: wobble(4.5, 2.5),
+      sleepScore: wobble(6, 2),
       note: diaryNotes[i % diaryNotes.length],
-      created_at: date.toISOString(),
+      createdAt: date,
     };
   });
-
-  const { error: moodError } = await supabase.from("mood_entries").insert(moodRows);
-  if (moodError) {
-    return NextResponse.json({ error: `Gagal seed mood_entries: ${moodError.message}` }, { status: 500 });
-  }
+  await db.insert(moodEntries).values(moodRows);
 
   // ---------- 2. Seed 2 hasil screening (PHQ-9 & GAD-7) ----------
   const screeningRows = [
     {
-      user_id: user.id,
-      test_id: "phq9",
-      total_score: 7,
+      userId,
+      testId: "phq9" as const,
+      totalScore: 7,
       severity: "Ringan",
-      created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+      createdAt: new Date(Date.now() - 5 * 86400000),
     },
     {
-      user_id: user.id,
-      test_id: "gad7",
-      total_score: 5,
+      userId,
+      testId: "gad7" as const,
+      totalScore: 5,
       severity: "Ringan",
-      created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+      createdAt: new Date(Date.now() - 2 * 86400000),
     },
   ];
-
-  const { error: screeningError } = await supabase
-    .from("screening_results")
-    .insert(screeningRows);
-  if (screeningError) {
-    return NextResponse.json(
-      { error: `Gagal seed screening_results: ${screeningError.message}` },
-      { status: 500 }
-    );
-  }
+  await db.insert(screeningResults).values(screeningRows);
 
   // ---------- 3. Seed contoh percakapan AI ----------
   const aiRows = [
-    { user_id: user.id, role: "user", content: "Akhir-akhir ini aku sering merasa cemas soal kerjaan." },
+    { userId, role: "user" as const, content: "Akhir-akhir ini aku sering merasa cemas soal kerjaan." },
     {
-      user_id: user.id,
-      role: "model",
+      userId,
+      role: "model" as const,
       content:
         "Terima kasih sudah cerita 🌱 Wajar merasa cemas soal pekerjaan, apalagi kalau tuntutannya banyak. Boleh cerita lebih detail, bagian mana yang paling bikin cemas?",
     },
   ];
-  await supabase.from("ai_messages").insert(aiRows);
+  await db.insert(aiMessages).values(aiRows);
 
   return NextResponse.json({
     success: true,
@@ -97,21 +85,21 @@ export async function POST() {
   });
 }
 
-// Hapus semua data demo/pribadi milik user yang sedang login (reset akun)
+// Hapus semua data demo/pribadi milik user yang sedang login (reset akun).
+// Catatan: dulu ini bug diam-diam gagal karena RLS Supabase tidak punya
+// delete policy. Sekarang di Postgres local, query di-scope manual pakai
+// userId di WHERE clause, jadi tidak bergantung ke RLS sama sekali.
 export async function DELETE() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const session = await auth.api.getSession({ headers: headers() });
+  if (!session) {
     return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
   }
+  const userId = session.user.id;
 
   await Promise.all([
-    supabase.from("mood_entries").delete().eq("user_id", user.id),
-    supabase.from("screening_results").delete().eq("user_id", user.id),
-    supabase.from("ai_messages").delete().eq("user_id", user.id),
+    db.delete(moodEntries).where(eq(moodEntries.userId, userId)),
+    db.delete(screeningResults).where(eq(screeningResults.userId, userId)),
+    db.delete(aiMessages).where(eq(aiMessages.userId, userId)),
   ]);
 
   return NextResponse.json({ success: true });

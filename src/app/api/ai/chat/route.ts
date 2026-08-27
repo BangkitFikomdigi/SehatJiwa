@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { aiMessages } from "@/lib/db/schema";
 import { aiRateLimiter } from "@/lib/upstash/ratelimit";
 import { generateAiReply } from "@/lib/ai/gemini";
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const session = await auth.api.getSession({ headers: headers() });
+  if (!session) {
     return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
   }
 
   // Rate limit pakai Upstash Redis — 15 pesan/menit per pengguna
-  const { success, remaining } = await aiRateLimiter.limit(user.id);
+  const { success, remaining } = await aiRateLimiter.limit(session.user.id);
   if (!success) {
     return NextResponse.json(
       { error: "Terlalu banyak pesan. Coba lagi sebentar lagi ya 🙏" },
@@ -30,10 +29,10 @@ export async function POST(req: NextRequest) {
   try {
     const reply = await generateAiReply(history);
 
-    // Simpan riwayat percakapan ke Supabase (opsional, untuk histori pengguna)
-    await supabase.from("ai_messages").insert([
-      { user_id: user.id, role: "user", content: history[history.length - 1].text },
-      { user_id: user.id, role: "model", content: reply },
+    // Simpan riwayat percakapan ke Postgres (opsional, untuk histori pengguna)
+    await db.insert(aiMessages).values([
+      { userId: session.user.id, role: "user", content: history[history.length - 1].text },
+      { userId: session.user.id, role: "model", content: reply },
     ]);
 
     return NextResponse.json({ reply, remaining });

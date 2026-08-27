@@ -10,11 +10,10 @@ import { Mail, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth-client";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,19 +28,18 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name } },
-    });
+    const { error } = await authClient.signUp.email({ email, password, name });
     setLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message ?? "Gagal membuat akun.");
       return;
     }
-    toast.success("Akun berhasil dibuat! Silakan cek email untuk verifikasi.");
-    router.push("/login");
+    // autoSignIn aktif di konfigurasi Better Auth, jadi user langsung
+    // punya session setelah daftar — tidak perlu verifikasi email di local dev.
+    toast.success("Akun berhasil dibuat! Mengarahkan ke dashboard...");
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (

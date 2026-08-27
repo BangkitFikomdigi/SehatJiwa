@@ -1,35 +1,26 @@
-// src/app/layout.tsx
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "sonner";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { Sidebar } from "@/components/dashboard/sidebar";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-export const metadata: Metadata = {
-  title: "MindMe - Kesehatan Mental",
-  description: "Temani harimu dengan AI, catat mood, baca artikel psikologi, dan lakukan tes screening - semua dalam satu platform.",
-  icons: {
-    icon: "/logo.png",
-  },
-};
-
-export default function RootLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({ headers: headers() });
+
+  // middleware.ts sudah menjaga route ini (cek cookie), redirect ini
+  // sebagai lapisan kedua yang benar-benar memvalidasi session ke DB.
+  if (!session) redirect("/login");
+
   return (
-    <html lang="id">
-      <body className={`${plusJakartaSans.variable} font-sans`}>
-        {children}
-        <Toaster position="top-center" richColors />
-      </body>
-    </html>
+    <div className="flex min-h-screen flex-col bg-primary-bg md:flex-row">
+      <Sidebar
+        userEmail={session.user.email ?? ""}
+        userName={session.user.name ?? ""}
+      />
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+    </div>
   );
 }

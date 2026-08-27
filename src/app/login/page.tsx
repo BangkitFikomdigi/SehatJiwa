@@ -10,11 +10,10 @@ import { Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,13 +21,15 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await authClient.signIn.email({ email, password });
     setLoading(false);
 
     if (error) {
-      toast.error(error.message === "Invalid login credentials"
-        ? "Email atau password salah."
-        : error.message);
+      toast.error(
+        error.message === "Invalid email or password"
+          ? "Email atau password salah."
+          : error.message ?? "Gagal masuk."
+      );
       return;
     }
     toast.success("Berhasil masuk! Mengarahkan ke dashboard...");

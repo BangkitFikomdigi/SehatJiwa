@@ -1,12 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Settings } from "lucide-react";
 
 export default async function SettingsPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth.api.getSession({ headers: headers() });
+  const user = session?.user;
 
   return (
     <div className="max-w-lg space-y-6">
@@ -16,7 +15,7 @@ export default async function SettingsPage() {
       <Card className="space-y-3">
         <div>
           <div className="text-xs font-semibold uppercase text-ink-muted">Nama</div>
-          <div>{(user?.user_metadata?.full_name as string) || "—"}</div>
+          <div>{user?.name || "—"}</div>
         </div>
         <div>
           <div className="text-xs font-semibold uppercase text-ink-muted">Email</div>
@@ -25,15 +24,16 @@ export default async function SettingsPage() {
         <div>
           <div className="text-xs font-semibold uppercase text-ink-muted">Bergabung sejak</div>
           <div>
-            {user?.created_at
-              ? new Date(user.created_at).toLocaleDateString("id-ID", { dateStyle: "long" })
+            {user?.createdAt
+              ? new Date(user.createdAt).toLocaleDateString("id-ID", { dateStyle: "long" })
               : "—"}
           </div>
         </div>
       </Card>
       <p className="text-xs text-ink-muted">
         Manajemen profil lengkap (ganti password, hapus akun) bisa ditambahkan
-        di sini menggunakan Supabase Auth Admin API.
+        di sini menggunakan Better Auth API (mis. auth.api.changePassword,
+        auth.api.deleteUser).
       </p>
     </div>
   );
