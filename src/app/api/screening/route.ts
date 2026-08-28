@@ -5,14 +5,24 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { screeningResults } from "@/lib/db/schema";
 
+const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
+const DUMMY_USER_ID = "test-user-1";
+
 export async function GET() {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    userId = session.user.id;
+  }
 
   const rows = await db
     .select()
     .from(screeningResults)
-    .where(eq(screeningResults.userId, session.user.id))
+    .where(eq(screeningResults.userId, userId))
     .orderBy(desc(screeningResults.createdAt))
     .limit(10);
 
@@ -28,8 +38,15 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    userId = session.user.id;
+  }
 
   const { test_id, total_score, severity } = await req.json();
   if (!test_id || (test_id !== "phq9" && test_id !== "gad7") || typeof total_score !== "number" || !severity) {
@@ -38,7 +55,7 @@ export async function POST(req: NextRequest) {
 
   const [result] = await db
     .insert(screeningResults)
-    .values({ userId: session.user.id, testId: test_id, totalScore: total_score, severity })
+    .values({ userId, testId: test_id, totalScore: total_score, severity })
     .returning();
 
   return NextResponse.json({

@@ -5,16 +5,29 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { moodEntries } from "@/lib/db/schema";
 
+const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
+
+// Dummy user ID untuk testing tanpa auth
+const DUMMY_USER_ID = "test-user-1";
+
 export async function GET() {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    // Gunakan dummy user ID jika auth di-skip
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) {
+      return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+    userId = session.user.id;
   }
 
   const rows = await db
     .select()
     .from(moodEntries)
-    .where(eq(moodEntries.userId, session.user.id))
+    .where(eq(moodEntries.userId, userId))
     .orderBy(desc(moodEntries.createdAt))
     .limit(30);
 
@@ -33,9 +46,16 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) {
+      return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+    userId = session.user.id;
   }
 
   const { mood_score, stress_score, sleep_score, note } = await req.json();
@@ -54,7 +74,7 @@ export async function POST(req: NextRequest) {
   const [entry] = await db
     .insert(moodEntries)
     .values({
-      userId: session.user.id,
+      userId,
       moodScore: mood_score,
       stressScore: stress_score,
       sleepScore: sleep_score,
