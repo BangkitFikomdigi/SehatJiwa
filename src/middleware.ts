@@ -1,9 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
+// Bypass auth untuk development lokal (teman testing tanpa auth)
+const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
+
 // Cek cepat via cookie (tanpa hit DB) untuk redirect dasar. Validasi penuh
 // session tetap dilakukan di server component/API route lewat auth.api.getSession().
 export function middleware(request: NextRequest) {
+  // Skip semua middleware auth jika NEXT_PUBLIC_SKIP_AUTH = true
+  if (SKIP_AUTH) {
+    return NextResponse.next();
+  }
+
   const sessionCookie = getSessionCookie(request);
 
   const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
