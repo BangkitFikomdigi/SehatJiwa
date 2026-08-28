@@ -4,32 +4,39 @@ import { getSessionCookie } from "better-auth/cookies";
 // Bypass auth untuk development lokal (teman testing tanpa auth)
 const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
 
-// Cek cepat via cookie (tanpa hit DB) untuk redirect dasar. Validasi penuh
-// session tetap dilakukan di server component/API route lewat auth.api.getSession().
 export function middleware(request: NextRequest) {
   // Skip semua middleware auth jika NEXT_PUBLIC_SKIP_AUTH = true
   if (SKIP_AUTH) {
+    // Redirect login/register ke dashboard jika auth di-skip
+    const isAuthPage =
+      request.nextUrl.pathname.startsWith("/login") ||
+      request.nextUrl.pathname.startsWith("/register");
+
+    if (isAuthPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
     return NextResponse.next();
   }
 
-  // Block akses ke /login dan /register kalau auth diaktifkan
+  // Auth logic normal (jika SKIP_AUTH = false)
+  const sessionCookie = getSessionCookie(request);
+  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
   const isAuthPage =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/register");
 
-  if (isAuthPage && !SKIP_AUTH) {
-    // Redirect ke dashboard atau home
+  if (!sessionCookie && isDashboard) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  const sessionCookie = getSessionCookie(request);
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
-
-  if (!sessionCookie && isDashboard) {
+  if (sessionCookie && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
