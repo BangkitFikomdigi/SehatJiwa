@@ -12,22 +12,24 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionCookie = getSessionCookie(request);
-
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
+  // Block akses ke /login dan /register kalau auth diaktifkan
   const isAuthPage =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/register");
 
-  if (!sessionCookie && isDashboard) {
+  if (isAuthPage && !SKIP_AUTH) {
+    // Redirect ke dashboard atau home
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
-  if (sessionCookie && isAuthPage) {
+  const sessionCookie = getSessionCookie(request);
+  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
+
+  if (!sessionCookie && isDashboard) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
