@@ -5,6 +5,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { moodEntries, screeningResults, aiMessages } from "@/lib/db/schema";
 
+const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
+const DUMMY_USER_ID = "test-user-1";
+
 // Menghasilkan variasi angka yang natural (bukan garis lurus membosankan)
 function wobble(base: number, range: number) {
   const v = base + (Math.random() * range * 2 - range);
@@ -24,11 +27,17 @@ const diaryNotes = [
 ];
 
 export async function POST() {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) {
+      return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+    userId = session.user.id;
   }
-  const userId = session.user.id;
 
   // ---------- 1. Seed 14 hari mood_entries ----------
   const moodRows = Array.from({ length: 14 }).map((_, i) => {
@@ -86,15 +95,18 @@ export async function POST() {
 }
 
 // Hapus semua data demo/pribadi milik user yang sedang login (reset akun).
-// Catatan: dulu ini bug diam-diam gagal karena RLS Supabase tidak punya
-// delete policy. Sekarang di Postgres local, query di-scope manual pakai
-// userId di WHERE clause, jadi tidak bergantung ke RLS sama sekali.
 export async function DELETE() {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+  let userId: string | null = null;
+
+  if (SKIP_AUTH) {
+    userId = DUMMY_USER_ID;
+  } else {
+    const session = await auth.api.getSession({ headers: headers() });
+    if (!session) {
+      return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+    userId = session.user.id;
   }
-  const userId = session.user.id;
 
   await Promise.all([
     db.delete(moodEntries).where(eq(moodEntries.userId, userId)),
