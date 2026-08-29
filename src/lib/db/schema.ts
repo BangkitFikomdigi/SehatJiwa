@@ -101,3 +101,13 @@ export const screeningResults = pgTable("screening_results", {
   severity: text("severity").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const adminUsers = pgTable("admin_users", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  role: text("role", { enum: ["super_admin", "admin"] }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

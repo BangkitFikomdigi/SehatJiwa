@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -13,6 +14,7 @@ import {
   ClipboardCheck,
   Settings,
   LogOut,
+  Shield,
 } from "lucide-react";
 
 const menu = [
@@ -26,6 +28,22 @@ const menu = [
 export function Sidebar({ userEmail, userName }: { userEmail: string; userName: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  async function checkAdminStatus() {
+    try {
+      const res = await fetch("/api/admin/check");
+      if (res.ok) {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+  }
 
   async function handleLogout() {
     await authClient.signOut();
@@ -62,6 +80,22 @@ export function Sidebar({ userEmail, userName }: { userEmail: string; userName: 
         })}
       </ul>
 
+      {/* Admin Link */}
+      {isAdmin && (
+        <div className="my-2 border-t border-primary/10 pt-2">
+          <Link
+            href="/dashboard/admin"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-ink-muted transition-colors hover:bg-primary-bg hover:text-primary md:gap-3 md:px-4 md:py-3 md:text-sm",
+              pathname.startsWith("/dashboard/admin") && "bg-primary-lighter font-semibold text-primary"
+            )}
+          >
+            <Shield className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="hidden sm:inline">Admin</span>
+          </Link>
+        </div>
+      )}
+
       <div className="mt-auto hidden border-t border-primary/10 pt-4 md:block">
         <Link
           href="/dashboard/settings"
@@ -87,7 +121,7 @@ export function Sidebar({ userEmail, userName }: { userEmail: string; userName: 
         </div>
       </div>
 
-      {/* Tombol keluar ringkas untuk mobile (bottom-menu disembunyikan di layar kecil) */}
+      {/* Tombol keluar ringkas untuk mobile */}
       <button
         onClick={handleLogout}
         className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-ink-muted hover:bg-red-50 hover:text-red-600 md:hidden"
