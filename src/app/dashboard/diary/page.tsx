@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { InteractiveAquarium } from "../interactive-aquarium";
 
 // ---------------------------------------------------------------------------
 // Mood categories
@@ -17,11 +18,11 @@ import { Label } from "@/components/ui/label";
 // that already exist in the database.
 // ---------------------------------------------------------------------------
 const MOODS = [
-  { key: "sangat_bahagia", label: "Sangat Bahagia", emoji: "😄", score: 9, color: "#F59E0B", soft: "#FEF3C7", ring: "#FCD34D" },
-  { key: "bahagia", label: "Bahagia", emoji: "🙂", score: 7, color: "#10B981", soft: "#D1FAE5", ring: "#6EE7B7" },
-  { key: "netral", label: "Netral", emoji: "😐", score: 5, color: "#64748B", soft: "#F1F5F9", ring: "#CBD5E1" },
-  { key: "sedih", label: "Sedih", emoji: "🙁", score: 3, color: "#3B82F6", soft: "#DBEAFE", ring: "#93C5FD" },
-  { key: "sangat_sedih", label: "Sangat Sedih", emoji: "😢", score: 1, color: "#7C3AED", soft: "#EDE9FE", ring: "#C4B5FD" },
+  { key: "sangat_bahagia", label: "Sangat Bahagia", emoji: "😄", score: 9, ring: "border-yellow-200", text: "text-yellow-600" },
+  { key: "bahagia", label: "Bahagia", emoji: "🙂", score: 7, ring: "border-green-200", text: "text-green-600" },
+  { key: "netral", label: "Netral", emoji: "😐", score: 5, ring: "border-gray-200", text: "text-gray-500" },
+  { key: "sedih", label: "Sedih", emoji: "🙁", score: 3, ring: "border-blue-200", text: "text-blue-600" },
+  { key: "sangat_sedih", label: "Sangat Sedih", emoji: "😢", score: 1, ring: "border-purple-200", text: "text-purple-600" },
 ] as const;
 
 type MoodKey = (typeof MOODS)[number]["key"];
@@ -39,107 +40,14 @@ type Entry = {
   created_at: string;
 };
 
-// ---------------------------------------------------------------------------
-// Aquarium visual — fills based on the % of the last 30 days that have an
-// entry, so it reads as a consistency tracker rather than a raw counter.
-// ---------------------------------------------------------------------------
-function MoodAquarium({ fillPercent, hasFish }: { fillPercent: number; hasFish: boolean }) {
-  const topY = 92;
-  const bottomY = 262;
-  const headroom = 14;
-  const usable = bottomY - topY - headroom;
-  const waterY = bottomY - (fillPercent / 100) * usable;
-  const waterHeight = bottomY - waterY;
-
-  return (
-    <div className="relative mx-auto" style={{ width: 200, height: 270 }}>
-      <svg viewBox="0 0 260 300" width="200" height="270">
-        <defs>
-          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7DD3FC" />
-            <stop offset="55%" stopColor="#38BDF8" />
-            <stop offset="100%" stopColor="#0369A1" />
-          </linearGradient>
-          <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#F0F9FF" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0.35" />
-          </linearGradient>
-          <clipPath id="bowlClip">
-            <circle cx="130" cy="177" r="90" />
-          </clipPath>
-        </defs>
-
-        <circle cx="130" cy="177" r="98" fill="url(#glassGrad)" stroke="#BAE6FD" strokeWidth="3" />
-
-        <g clipPath="url(#bowlClip)">
-          <ellipse cx="90" cy="258" rx="14" ry="7" fill="#D6D3D1" />
-          <ellipse cx="115" cy="263" rx="16" ry="8" fill="#E7E5E4" />
-          <ellipse cx="145" cy="261" rx="15" ry="7" fill="#CBD5C0" />
-          <ellipse cx="172" cy="257" rx="13" ry="6" fill="#D6D3D1" />
-
-          <path d="M100,262 C96,235 108,215 100,190" fill="none" stroke="#16A34A" strokeWidth="5" strokeLinecap="round" />
-          <path d="M108,262 C114,238 104,220 112,198" fill="none" stroke="#22C55E" strokeWidth="5" strokeLinecap="round" />
-
-          <rect
-            x="32"
-            y={waterY}
-            width="196"
-            height={waterHeight}
-            fill="url(#waterGrad)"
-            style={{ transition: "y 1s ease-out, height 1s ease-out" }}
-          />
-
-          {fillPercent > 0 && (
-            <>
-              <circle cx="150" cy="240" r="2.5" fill="#F0F9FF" opacity="0.8" className="aq-bubble-a" />
-              <circle cx="165" cy="245" r="1.8" fill="#F0F9FF" opacity="0.7" className="aq-bubble-b" />
-            </>
-          )}
-
-          {hasFish && (
-            <g className="aq-fish" style={{ transformOrigin: "130px 180px" }}>
-              <g transform="translate(0,180)">
-                <ellipse cx="0" cy="0" rx="13" ry="8" fill="#FB923C" />
-                <path d="M-12,0 L-20,-6 L-20,6 Z" fill="#EA580C" />
-                <circle cx="6" cy="-2" r="1.6" fill="#1C1917" />
-              </g>
-            </g>
-          )}
-        </g>
-
-        <ellipse cx="130" cy="80" rx="90" ry="15" fill="#E0F2FE" opacity="0.55" />
-        <ellipse cx="130" cy="80" rx="90" ry="15" fill="none" stroke="#7DD3FC" strokeWidth="4" opacity="0.9" />
-        <path d="M64,120 Q58,178 72,232" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity="0.35" fill="none" />
-      </svg>
-
-      <style>{`
-        @keyframes aqBubbleRise { 0% { transform: translateY(0); opacity: .9; } 100% { transform: translateY(-140px); opacity: 0; } }
-        .aq-bubble-a { animation: aqBubbleRise 3.2s ease-in infinite; }
-        .aq-bubble-b { animation: aqBubbleRise 2.6s ease-in infinite .8s; }
-        @keyframes aqSwim {
-          0% { transform: translateX(-38px) scaleX(1); }
-          48% { transform: translateX(38px) scaleX(1); }
-          50% { transform: translateX(38px) scaleX(-1); }
-          98% { transform: translateX(-38px) scaleX(-1); }
-          100% { transform: translateX(-38px) scaleX(1); }
-        }
-        .aq-fish { animation: aqSwim 6s ease-in-out infinite; }
-      `}</style>
-    </div>
-  );
-}
-
 function MoodButton({ mood, selected, onClick }: { mood: (typeof MOODS)[number]; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors"
-      style={{
-        borderColor: selected ? mood.color : "#E2E8F0",
-        background: selected ? mood.soft : "white",
-        color: selected ? mood.color : "#475569",
-      }}
+      className={`flex flex-col items-center justify-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors ${
+        selected ? `${mood.ring} bg-primary-bg ${mood.text}` : "border-gray-200 bg-white text-ink-muted"
+      }`}
     >
       <span className="text-lg leading-none">{mood.emoji}</span>
       {mood.label}
@@ -155,21 +63,21 @@ export default function DiaryPage() {
   const [note, setNote] = useState("");
 
   async function loadEntries() {
-  setLoading(true);
-  try {
-    const res = await fetch("/api/diary");
-    const data = await res.json();
-    if (res.ok) {
-      setEntries(data.entries ?? []);
-    } else {
-      toast.error(data.error ?? "Gagal memuat data diary");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/diary");
+      const data = await res.json();
+      if (res.ok) {
+        setEntries(data.entries ?? []);
+      } else {
+        toast.error(data.error ?? "Gagal memuat data diary");
+      }
+    } catch (err) {
+      toast.error("Gagal terhubung ke server");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    toast.error("Gagal terhubung ke server");
-  } finally {
-    setLoading(false);
   }
-}
 
   useEffect(() => {
     loadEntries();
@@ -184,12 +92,14 @@ export default function DiaryPage() {
     [entries]
   );
 
-  const fillPercent = useMemo(() => {
-    const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const daysWithEntry = new Set(
-      entries.filter((e) => new Date(e.created_at).getTime() >= since).map((e) => new Date(e.created_at).toDateString())
-    ).size;
-    return Math.min(100, Math.round((daysWithEntry / 30) * 100));
+  // Ekspresi mood terakhir yang dicatat, dipakai InteractiveAquarium — sama
+  // seperti logika di dashboard.
+  const lastMoodExpression: "senang" | "netral" | "sedih" | undefined = useMemo(() => {
+    if (entries.length === 0) return undefined;
+    const last = scoreToMood(entries[0].mood_score ?? 5);
+    if (last.key === "bahagia" || last.key === "sangat_bahagia") return "senang";
+    if (last.key === "sedih" || last.key === "sangat_sedih") return "sedih";
+    return "netral";
   }, [entries]);
 
   async function handleSave() {
@@ -229,45 +139,44 @@ export default function DiaryPage() {
         <p className="text-sm text-ink-muted">Setiap kali kamu mencatat perasaan, akuariummu terisi sedikit lebih penuh.</p>
       </div>
 
-      <Card className="space-y-6">
+      <Card className="border-none p-4 sm:p-6 shadow-softLg transition-all duration-300 ease-out motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 bg-white/50 backdrop-blur-sm space-y-6">
         <div className="flex flex-wrap gap-2">
           {MOODS.map((m) => (
             <span
               key={m.key}
-              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium"
-              style={{ borderColor: m.ring, background: m.soft, color: m.color }}
+              className={`inline-flex items-center gap-1.5 rounded-full border ${m.ring} bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm`}
             >
-              {m.emoji} {m.label} <b>{counts[m.key] ?? 0}x</b>
+              {m.emoji} {m.label} <span className={`font-bold ${m.text}`}>{counts[m.key] ?? 0}x</span>
             </span>
           ))}
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-[200px_1fr]">
+        <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-3"
+            className="flex w-full flex-col items-center gap-3 xl:w-1/3"
           >
-            <MoodAquarium fillPercent={fillPercent} hasFish={entries.length > 0} />
-            <span className="rounded-full border border-primary-bg bg-primary-bg px-3 py-1 text-xs text-ink-muted">
+            <InteractiveAquarium totalMoods={entries.length} lastMoodExpression={lastMoodExpression} showHint={false} />
+            <span className="rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm">
               {loading ? "Memuat..." : `${entries.length} catatan mood tersimpan`}
             </span>
           </motion.div>
 
-          <div>
-            <Label className="mb-3 block">Bagaimana perasaanmu sekarang?</Label>
+          <div className="w-full xl:w-2/3">
+            <Label className="mb-3 block text-ink">Bagaimana perasaanmu sekarang?</Label>
             <div className="mb-2 grid grid-cols-3 gap-2">
               {MOODS.slice(0, 3).map((m) => (
                 <MoodButton key={m.key} mood={m} selected={selected === m.key} onClick={() => setSelected(m.key)} />
               ))}
             </div>
-            <div className="mb-5 grid max-w-[260px] grid-cols-2 gap-2">
+            <div className="grid max-w-[260px] grid-cols-2 gap-2">
               {MOODS.slice(3).map((m) => (
                 <MoodButton key={m.key} mood={m} selected={selected === m.key} onClick={() => setSelected(m.key)} />
               ))}
             </div>
 
-            <Label htmlFor="note">Catatan (opsional)</Label>
+            <Label htmlFor="note" className="mb-3 mt-6 block text-ink">Tulis Jurnal (opsional)</Label>
             <Textarea
               id="note"
               placeholder="Ceritakan hal yang terjadi hari ini..."
@@ -276,12 +185,57 @@ export default function DiaryPage() {
               className="mb-5"
             />
 
-            <Button onClick={handleSave} disabled={saving} className="w-full justify-center">
-              {saving ? "Menyimpan..." : "💾 Simpan Mood"}
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full justify-center rounded-full bg-gradient-to-r from-primary to-secondary text-white shadow-md shadow-purple-200 transition-all duration-300 ease-out hover:scale-[1.01] hover:shadow-lg active:scale-95"
+            >
+              {saving ? "Menyimpan..." : "💾 Simpan Mood & Jurnal"}
             </Button>
           </div>
         </div>
       </Card>
+
+      {/* ================= RIWAYAT JURNAL ================= */}
+      <div>
+        <h3 className="mb-4 text-lg font-bold text-ink sm:text-xl">Riwayat Jurnal</h3>
+
+        <Card className="border-none p-5 shadow-sm sm:p-6">
+          {loading ? (
+            <p className="py-6 text-center text-sm text-ink-muted">Memuat jurnal...</p>
+          ) : entries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary-lighter bg-primary-bg/40 px-6 py-10 text-center">
+              <p className="text-base font-semibold text-ink">Belum ada jurnal</p>
+              <p className="max-w-xs text-sm text-ink-muted">
+                Catatan moodmu akan muncul di sini setiap kali kamu menyimpan perasaanmu.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {entries.map((e) => {
+                const mood = scoreToMood(e.mood_score);
+                const date = new Date(e.created_at);
+                return (
+                  <div key={e.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                    <span className="text-xl leading-none">{mood.emoji}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-sm font-semibold ${mood.text}`}>{mood.label}</span>
+                        <span className="text-xs text-ink-muted">
+                          {date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                          {" · "}
+                          {date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                      {e.note && <p className="mt-1 text-sm text-ink-muted">{e.note}</p>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

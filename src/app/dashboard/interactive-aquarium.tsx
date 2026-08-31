@@ -7,10 +7,13 @@ type MoodExpression = "senang" | "netral" | "sedih";
 export function InteractiveAquarium({
   totalMoods,
   lastMoodExpression,
+  showHint = true,
 }: {
   totalMoods: number;
   /** Ekspresi wajah air berdasarkan mood terakhir yang ditambahkan user */
   lastMoodExpression?: MoodExpression;
+  /** Tampilkan tooltip ajakan ("Klik untuk isi mood pertamamu") saat hover. Default true. */
+  showHint?: boolean;
 }) {
   const [prevMoods, setPrevMoods] = useState(totalMoods);
   const [isDropping, setIsDropping] = useState(false);
@@ -153,9 +156,11 @@ export function InteractiveAquarium({
       </div>
 
       {/* TOOLTIP KECIL SAAT DI-HOVER: AJAKAN UNTUK MENAMBAH MOOD */}
-      <div className="pointer-events-none absolute bottom-2 z-30 rounded-full bg-ink/80 px-3 py-1 text-[11px] font-medium text-white opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100">
-        {lastMoodExpression ? "Mood terakhirmu · klik untuk isi lagi" : "Klik untuk isi mood pertamamu"}
-      </div>
+      {showHint && (
+        <div className="pointer-events-none absolute bottom-2 z-30 rounded-full bg-ink/80 px-3 py-1 text-[11px] font-medium text-white opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100">
+          {lastMoodExpression ? "Mood terakhirmu · klik untuk isi lagi" : "Klik untuk isi mood pertamamu"}
+        </div>
+      )}
 
       <style>{`
         @keyframes bob {
