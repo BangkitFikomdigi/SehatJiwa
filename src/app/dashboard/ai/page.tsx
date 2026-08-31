@@ -72,6 +72,9 @@ export default function AiChatPage() {
   const handleSelectChat = (chat: ChatHistory) => {
     setActiveChatId(chat.id);
     setMessages(chat.messages);
+    
+    // Opsional: Kalau lo versi mobile, pas chat diklik, panel otomatis nutup.
+    // Tapi karena ini buat dashboard desktop, kita biarin tetap buka.
   };
 
   const handleNewChat = () => {
@@ -101,9 +104,21 @@ export default function AiChatPage() {
     }
   };
 
-  const filteredHistory = history.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // 🚀 FITUR TELUSURI DI-UPGRADE DI SINI
+  const filteredHistory = history.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    
+    // 1. Cek apakah kata pencarian ada di Judul Obrolan
+    const matchTitle = item.title.toLowerCase().includes(query);
+    
+    // 2. Cek apakah kata pencarian ada di isi pesan (User atau AI)
+    const matchMessages = item.messages.some((m) => 
+      m.text.toLowerCase().includes(query)
+    );
+    
+    // Tampilkan jika cocok di judul ATAU di isi pesannya
+    return matchTitle || matchMessages;
+  });
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -150,7 +165,6 @@ export default function AiChatPage() {
   }
 
   return (
-    // Container utama: overflow-hidden supaya animasinya nggak meluber
     <div className="flex h-[calc(100vh-2rem)] w-full p-4 overflow-hidden">
       
       {/* ==================== PANEL KIRI (Area Chat Utama) ==================== */}
@@ -251,7 +265,6 @@ export default function AiChatPage() {
           isSidebarOpen ? "w-72 ml-6 opacity-100" : "w-0 ml-0 opacity-0 overflow-hidden"
         }`}
       >
-        {/* Inner container agar konten tidak mengecil/gepeng saat animasi */}
         <div className="flex w-72 flex-col h-full gap-4">
           
           <Button
@@ -262,11 +275,12 @@ export default function AiChatPage() {
             Percakapan Baru
           </Button>
 
+          {/* ================= INPUT TELUSURI PERCAKAPAN ================= */}
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Telusuri percakapan..."
+              placeholder="Telusuri percakapan"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-ink outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
@@ -282,7 +296,10 @@ export default function AiChatPage() {
             
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {filteredHistory.length === 0 ? (
-                <p className="py-4 text-center text-sm text-ink-muted">Tidak ada obrolan.</p>
+                <div className="flex flex-col items-center justify-center p-6 text-center">
+                  <Search className="h-8 w-8 text-slate-200 mb-2" />
+                  <p className="text-sm text-ink-muted">Tidak ada percakapan yang cocok.</p>
+                </div>
               ) : (
                 filteredHistory.map((item) => {
                   const isActive = item.id === activeChatId;
