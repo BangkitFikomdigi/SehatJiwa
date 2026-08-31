@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { ClipboardCheck, ArrowLeft, Phone } from "lucide-react";
+import { ClipboardCheck, ArrowLeft, Phone, Download, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,11 +14,14 @@ export default function ScreeningPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<{ total: number; severity: ReturnType<typeof scoreResult> } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savedResultId, setSavedResultId] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   function startTest(id: TestId) {
     setActiveTest(id);
     setAnswers(new Array(tests[id].questions.length).fill(-1));
     setResult(null);
+    setSavedResultId(null);
   }
 
   function answer(qIndex: number, value: number) {
@@ -44,7 +47,39 @@ export default function ScreeningPage() {
       body: JSON.stringify({ test_id: activeTest, total_score: total, severity: severity.label }),
     });
     setSaving(false);
-    if (res.ok) toast.success("Hasil tersimpan di riwayatmu.");
+    if (res.ok) {
+      const data = await res.json();
+      setSavedResultId(data.result?.id ?? null);
+      toast.success("Hasil tersimpan di riwayatmu.");
+    } else {
+      toast.error("Gagal menyimpan hasil. Unduh PDF mungkin tidak tersedia.");
+    }
+  }
+
+  async function downloadResultPDF() {
+    if (!activeTest || !savedResultId) {
+      toast.error("Hasil belum tersimpan, coba ulangi tesnya.");
+      return;
+    }
+    setDownloading(true);
+    try {
+      const res = await fetch(`/api/screening/${savedResultId}/pdf`);
+      if (!res.ok) throw new Error("Gagal mengambil PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `screening-${activeTest}-${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("PDF hasil tes berhasil diunduh.");
+    } catch {
+      toast.error("Gagal mengunduh PDF. Coba lagi.");
+    } finally {
+      setDownloading(false);
+    }
   }
 
   if (activeTest && !result) {
@@ -132,8 +167,16 @@ export default function ScreeningPage() {
           </Card>
         )}
 
-        <div className="flex justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           <Button variant="outline" onClick={() => setActiveTest(null)}>Kembali ke Daftar Tes</Button>
+          <Button variant="soft" onClick={downloadResultPDF} disabled={downloading || !savedResultId}>
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            Unduh PDF
+          </Button>
           <Button onClick={() => startTest(activeTest)}>Ulangi Tes</Button>
         </div>
       </div>

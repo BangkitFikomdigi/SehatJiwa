@@ -56,7 +56,7 @@ export async function GET(
     const doc = new PDFDocument();
     const buffers: Buffer[] = [];
 
-    doc.on("data", (chunk) => buffers.push(chunk));
+    doc.on("data", (chunk: Buffer) => buffers.push(chunk));
     doc.on("end", () => {});
 
     // Title
