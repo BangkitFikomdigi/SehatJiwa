@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Fish } from "lucide-react";
+import { Fish, Pencil, Trash2, Check, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,6 +61,14 @@ export default function DiaryPage() {
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<MoodKey | null>(null);
   const [note, setNote] = useState("");
+
+  // Edit & delete state untuk entri di Riwayat Jurnal
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editSelected, setEditSelected] = useState<MoodKey | null>(null);
+  const [editNote, setEditNote] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function loadEntries() {
     setLoading(true);
@@ -127,6 +135,62 @@ export default function DiaryPage() {
     toast.success("Tersimpan — air di akuariummu bertambah 💧");
     setNote("");
     setSelected(null);
+    loadEntries();
+  }
+
+  function startEdit(entry: Entry) {
+    setConfirmDeleteId(null);
+    setEditingId(entry.id);
+    setEditSelected(scoreToMood(entry.mood_score).key);
+    setEditNote(entry.note ?? "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditSelected(null);
+    setEditNote("");
+  }
+
+  async function saveEdit(id: string) {
+    if (!editSelected) {
+      toast.error("Pilih dulu perasaannya ya 🙂");
+      return;
+    }
+    setEditSaving(true);
+    const mood = MOODS.find((m) => m.key === editSelected)!;
+    const res = await fetch(`/api/diary/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mood_score: mood.score,
+        note: editNote,
+      }),
+    });
+    const data = await res.json();
+    setEditSaving(false);
+
+    if (!res.ok) {
+      toast.error(data.error ?? "Gagal memperbarui catatan");
+      return;
+    }
+    toast.success("Catatan berhasil diperbarui");
+    cancelEdit();
+    loadEntries();
+  }
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    const res = await fetch(`/api/diary/${id}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+
+    if (!res.ok) {
+      toast.error(data.error ?? "Gagal menghapus catatan");
+      return;
+    }
+    toast.success("Catatan dihapus");
+    if (editingId === id) cancelEdit();
     loadEntries();
   }
 
@@ -215,6 +279,52 @@ export default function DiaryPage() {
               {entries.map((e) => {
                 const mood = scoreToMood(e.mood_score);
                 const date = new Date(e.created_at);
+                const isEditing = editingId === e.id;
+                const isConfirmingDelete = confirmDeleteId === e.id;
+                const isDeleting = deletingId === e.id;
+
+                if (isEditing) {
+                  return (
+                    <div key={e.id} className="py-3 first:pt-0 last:pb-0">
+                      <div className="mb-3 grid grid-cols-5 gap-1.5">
+                        {MOODS.map((m) => (
+                          <MoodButton
+                            key={m.key}
+                            mood={m}
+                            selected={editSelected === m.key}
+                            onClick={() => setEditSelected(m.key)}
+                          />
+                        ))}
+                      </div>
+                      <Textarea
+                        value={editNote}
+                        onChange={(ev) => setEditNote(ev.target.value)}
+                        placeholder="Ceritakan hal yang terjadi hari ini..."
+                        className="mb-3"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={cancelEdit}
+                          disabled={editSaving}
+                          className="rounded-full"
+                        >
+                          <X className="mr-1 h-3.5 w-3.5" /> Batal
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => saveEdit(e.id)}
+                          disabled={editSaving}
+                          className="rounded-full bg-gradient-to-r from-primary to-secondary text-white"
+                        >
+                          <Check className="mr-1 h-3.5 w-3.5" /> {editSaving ? "Menyimpan..." : "Simpan"}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={e.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="text-xl leading-none">{mood.emoji}</span>
@@ -228,6 +338,45 @@ export default function DiaryPage() {
                         </span>
                       </div>
                       {e.note && <p className="mt-1 text-sm text-ink-muted">{e.note}</p>}
+
+                      {isConfirmingDelete ? (
+                        <div className="mt-2 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                          <span className="flex-1">Hapus catatan ini?</span>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            disabled={isDeleting}
+                            className="rounded-full px-2 py-1 font-medium text-ink-muted hover:bg-white"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(e.id)}
+                            disabled={isDeleting}
+                            className="rounded-full bg-red-600 px-2.5 py-1 font-semibold text-white hover:bg-red-700"
+                          >
+                            {isDeleting ? "Menghapus..." : "Ya, hapus"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(e)}
+                            className="flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-primary"
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(e.id)}
+                            className="flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-red-600"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Hapus
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
