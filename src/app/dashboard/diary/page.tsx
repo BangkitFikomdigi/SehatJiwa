@@ -10,13 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { InteractiveAquarium } from "../interactive-aquarium";
 
-// ---------------------------------------------------------------------------
-// Mood categories
-// mood_score keeps using the existing 0-10 numeric column so the backend/
-// schema for /api/diary does not need to change. Each category maps to a
-// representative score; scoreToMood() reverses that mapping for entries
-// that already exist in the database.
-// ---------------------------------------------------------------------------
 const MOODS = [
   { key: "sangat_bahagia", label: "Sangat Bahagia", emoji: "😄", score: 9, ring: "border-yellow-200", text: "text-yellow-600" },
   { key: "bahagia", label: "Bahagia", emoji: "🙂", score: 7, ring: "border-green-200", text: "text-green-600" },
@@ -36,6 +29,8 @@ function scoreToMood(score: number) {
 type Entry = {
   id: string;
   mood_score: number;
+  stress_score: number;
+  sleep_score: number;
   note: string | null;
   created_at: string;
 };
@@ -61,8 +56,6 @@ export default function DiaryPage() {
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<MoodKey | null>(null);
   const [note, setNote] = useState("");
-
-  // Edit & delete state untuk entri di Riwayat Jurnal
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editSelected, setEditSelected] = useState<MoodKey | null>(null);
   const [editNote, setEditNote] = useState("");
@@ -100,8 +93,6 @@ export default function DiaryPage() {
     [entries]
   );
 
-  // Ekspresi mood terakhir yang dicatat, dipakai InteractiveAquarium — sama
-  // seperti logika di dashboard.
   const lastMoodExpression: "senang" | "netral" | "sedih" | undefined = useMemo(() => {
     if (entries.length === 0) return undefined;
     const last = scoreToMood(entries[0].mood_score ?? 5);
@@ -122,6 +113,8 @@ export default function DiaryPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mood_score: mood.score,
+        stress_score: 5,
+        sleep_score: 5,
         note,
       }),
     });
@@ -163,6 +156,8 @@ export default function DiaryPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mood_score: mood.score,
+        stress_score: 5,
+        sleep_score: 5,
         note: editNote,
       }),
     });
@@ -260,7 +255,6 @@ export default function DiaryPage() {
         </div>
       </Card>
 
-      {/* ================= RIWAYAT JURNAL ================= */}
       <div>
         <h3 className="mb-4 text-lg font-bold text-ink sm:text-xl">Riwayat Jurnal</h3>
 
