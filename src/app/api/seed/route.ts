@@ -3,10 +3,22 @@ import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { moodEntries, screeningResults, aiMessages } from "@/lib/db/schema";
+import { user, moodEntries, screeningResults, aiMessages } from "@/lib/db/schema";
 
 const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
 const DUMMY_USER_ID = "test-user-1";
+
+async function ensureDummyUser() {
+  await db
+    .insert(user)
+    .values({
+      id: DUMMY_USER_ID,
+      name: "Tester",
+      email: "test@example.com",
+      emailVerified: true,
+    })
+    .onConflictDoNothing({ target: user.id });
+}
 
 // Menghasilkan variasi angka yang natural (bukan garis lurus membosankan)
 function wobble(base: number, range: number) {
@@ -38,6 +50,8 @@ export async function POST() {
     }
     userId = session.user.id;
   }
+
+  if (SKIP_AUTH) await ensureDummyUser();
 
   // ---------- 1. Seed 14 hari mood_entries ----------
   const moodRows = Array.from({ length: 14 }).map((_, i) => {

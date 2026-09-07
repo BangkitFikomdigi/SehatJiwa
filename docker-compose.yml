@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: sehatjiwa
@@ -11,3 +11,6 @@ services:
     volumes:
       - sehatjiwa_pgdata:/var/lib/postgresql/data
     command: ["postgres", "-c", "password_encryption=md5", "-c", "listen_addresses=*", "-c", "max_connections=100"]	
+
+volumes:
+  sehatjiwa_pgdata:

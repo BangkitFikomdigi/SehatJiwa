@@ -3,12 +3,21 @@ import { headers } from "next/headers";
 import { eq, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { moodEntries } from "@/lib/db/schema";
+import { user, moodEntries } from "@/lib/db/schema";
 
 const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
 
 // Dummy user ID untuk testing tanpa auth
 const DUMMY_USER_ID = "test-user-1";
+
+async function ensureDummyUser() {
+  await db.insert(user).values({
+    id: DUMMY_USER_ID,
+    name: "Tester",
+    email: "test@example.com",
+    emailVerified: true,
+  }).onConflictDoNothing({ target: user.id });
+}
 
 export async function GET() {
   let userId: string | null = null;
@@ -23,6 +32,8 @@ export async function GET() {
     }
     userId = session.user.id;
   }
+
+  if (SKIP_AUTH) await ensureDummyUser();
 
   const rows = await db
     .select()
@@ -57,6 +68,8 @@ export async function POST(req: NextRequest) {
     }
     userId = session.user.id;
   }
+
+  if (SKIP_AUTH) await ensureDummyUser();
 
   const { mood_score, stress_score, sleep_score, note } = await req.json();
 

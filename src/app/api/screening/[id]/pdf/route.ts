@@ -136,7 +136,7 @@ export async function GET(
 
     doc.end();
 
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       doc.on("end", () => {
         const pdfBuffer = Buffer.concat(buffers);
         resolve(
