@@ -3,11 +3,9 @@ import { headers } from "next/headers";
 import { eq, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { user, moodEntries } from "@/lib/db/schema";
+import { user, moodJournals } from "@/lib/db/schema";
 
 const SKIP_AUTH = process.env.NEXT_PUBLIC_SKIP_AUTH === "true";
-
-// Dummy user ID untuk testing tanpa auth
 const DUMMY_USER_ID = "test-user-1";
 
 async function ensureDummyUser() {
@@ -23,7 +21,6 @@ export async function GET() {
   let userId: string | null = null;
 
   if (SKIP_AUTH) {
-    // Gunakan dummy user ID jika auth di-skip
     userId = DUMMY_USER_ID;
   } else {
     const session = await auth.api.getSession({ headers: headers() });
@@ -37,20 +34,16 @@ export async function GET() {
 
   const rows = await db
     .select()
-    .from(moodEntries)
-    .where(eq(moodEntries.userId, userId))
-    .orderBy(desc(moodEntries.createdAt))
+    .from(moodJournals)
+    .where(eq(moodJournals.userId, userId))
+    .orderBy(desc(moodJournals.createdAt))
     .limit(500);
 
-  // Bentuk response disamakan dengan format lama (snake_case) supaya
-  // frontend (src/app/dashboard/diary/page.tsx) tidak perlu diubah.
   const entries = rows.map((e) => ({
     id: e.id,
-    mood_score: e.moodScore,
-    stress_score: e.stressScore,
-    sleep_score: e.sleepScore,
-    mood_emoji: e.moodEmoji,
+    content: e.content,
     created_at: e.createdAt.toISOString(),
+    updated_at: e.updatedAt.toISOString(),
   }));
 
   return NextResponse.json({ entries });
@@ -71,42 +64,24 @@ export async function POST(req: NextRequest) {
 
   if (SKIP_AUTH) await ensureDummyUser();
 
-  const { mood_score, stress_score, sleep_score, mood_emoji } = await req.json();
+  const { content } = await req.json();
+  const trimmed = typeof content === "string" ? content.trim() : "";
 
-  if (
-    typeof mood_score !== "number" ||
-    typeof stress_score !== "number" ||
-    typeof sleep_score !== "number" ||
-    mood_score < 0 || mood_score > 10 ||
-    stress_score < 0 || stress_score > 10 ||
-    sleep_score < 0 || sleep_score > 10
-  ) {
-    return NextResponse.json({ error: "Data mood tidak valid." }, { status: 400 });
-  }
-
-  if (mood_emoji !== undefined && mood_emoji !== null && typeof mood_emoji !== "string") {
-    return NextResponse.json({ error: "Emoji tidak valid." }, { status: 400 });
+  if (!trimmed) {
+    return NextResponse.json({ error: "Jurnal tidak boleh kosong." }, { status: 400 });
   }
 
   const [entry] = await db
-    .insert(moodEntries)
-    .values({
-      userId,
-      moodScore: mood_score,
-      stressScore: stress_score,
-      sleepScore: sleep_score,
-      moodEmoji: mood_emoji || null,
-    })
+    .insert(moodJournals)
+    .values({ userId, content: trimmed })
     .returning();
 
   return NextResponse.json({
     entry: {
       id: entry.id,
-      mood_score: entry.moodScore,
-      stress_score: entry.stressScore,
-      sleep_score: entry.sleepScore,
-      mood_emoji: entry.moodEmoji,
+      content: entry.content,
       created_at: entry.createdAt.toISOString(),
+      updated_at: entry.updatedAt.toISOString(),
     },
   });
 }

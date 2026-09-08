@@ -77,8 +77,26 @@ export const moodEntries = pgTable("mood_entries", {
   moodScore: smallint("mood_score").notNull(),
   stressScore: smallint("stress_score").notNull(),
   sleepScore: smallint("sleep_score").notNull(),
-  note: text("note"),
+  moodEmoji: text("mood_emoji"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Jurnal teks sekarang independen dari input mood — masing-masing
+// punya tombol simpan sendiri di UI, jadi tidak lagi dipaksa terikat
+// ke satu mood_entries tertentu. (Bukan reuse tabel `journals` di
+// bawah, yang punya kolom title wajib dan dipakai fitur /api/journals
+// yang berbeda.)
+export const moodJournals = pgTable("mood_journals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const aiMessages = pgTable("ai_messages", {

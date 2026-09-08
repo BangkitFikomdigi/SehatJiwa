@@ -12,7 +12,6 @@ export async function GET() {
         mood_score: moodEntries.moodScore,
         stress_score: moodEntries.stressScore,
         sleep_score: moodEntries.sleepScore,
-        note: moodEntries.note,
         created_at: moodEntries.createdAt,
       })
       .from(moodEntries)
