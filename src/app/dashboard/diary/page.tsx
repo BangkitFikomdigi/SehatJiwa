@@ -11,11 +11,11 @@ import { Label } from "@/components/ui/label";
 import { InteractiveAquarium } from "../interactive-aquarium";
 
 const MOODS = [
-  { key: "sangat_bahagia", label: "Sangat Bahagia", emoji: "😄", score: 9, ring: "border-yellow-200", text: "text-yellow-600" },
-  { key: "bahagia", label: "Bahagia", emoji: "🙂", score: 7, ring: "border-green-200", text: "text-green-600" },
-  { key: "netral", label: "Netral", emoji: "😐", score: 5, ring: "border-gray-200", text: "text-gray-500" },
-  { key: "sedih", label: "Sedih", emoji: "🙁", score: 3, ring: "border-blue-200", text: "text-blue-600" },
-  { key: "sangat_sedih", label: "Sangat Sedih", emoji: "😢", score: 1, ring: "border-purple-200", text: "text-purple-600" },
+  { key: "sangat_bahagia", label: "Sangat Bahagia", emoji: "😄", score: 9, ring: "border-yellow-200", text: "text-yellow-600", color: "#eab308" },
+  { key: "bahagia", label: "Bahagia", emoji: "🙂", score: 7, ring: "border-green-200", text: "text-green-600", color: "#22c55e" },
+  { key: "netral", label: "Netral", emoji: "😐", score: 5, ring: "border-gray-200", text: "text-gray-500", color: "#9ca3af" },
+  { key: "sedih", label: "Sedih", emoji: "🙁", score: 3, ring: "border-blue-200", text: "text-blue-600", color: "#3b82f6" },
+  { key: "sangat_sedih", label: "Sangat Sedih", emoji: "😢", score: 1, ring: "border-purple-200", text: "text-purple-600", color: "#8b5cf6" },
 ] as const;
 
 type MoodKey = (typeof MOODS)[number]["key"];
@@ -100,6 +100,17 @@ export default function DiaryPage() {
     if (last.key === "sedih" || last.key === "sangat_sedih") return "sedih";
     return "netral";
   }, [entries]);
+
+  // Warna tiap mood yang pernah dicatat, diurutkan dari yang PALING LAMA ke PALING BARU,
+  // supaya di akuarium tiap mood jadi lapisan warna sendiri yang menumpuk.
+  const moodColors = useMemo(
+    () =>
+      entries
+        .slice()
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map((e) => scoreToMood(e.mood_score ?? 5).color),
+    [entries]
+  );
 
   async function handleSave() {
     if (!selected) {
@@ -216,7 +227,12 @@ export default function DiaryPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex w-full flex-col items-center gap-3 xl:w-1/3"
           >
-            <InteractiveAquarium totalMoods={entries.length} lastMoodExpression={lastMoodExpression} showHint={false} />
+            <InteractiveAquarium
+              totalMoods={entries.length}
+              lastMoodExpression={lastMoodExpression}
+              moodColors={moodColors}
+              showHint={false}
+            />
             <span className="rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm">
               {loading ? "Memuat..." : `${entries.length} catatan mood tersimpan`}
             </span>

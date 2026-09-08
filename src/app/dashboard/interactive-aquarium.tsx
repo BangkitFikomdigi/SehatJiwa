@@ -4,14 +4,23 @@ import { useEffect, useState } from "react";
 
 type MoodExpression = "senang" | "netral" | "sedih";
 
+const DEFAULT_WATER_COLOR = "#7dd3fc"; // biru muda default saat belum ada mood
+
 export function InteractiveAquarium({
   totalMoods,
   lastMoodExpression,
+  moodColors,
   showHint = true,
 }: {
   totalMoods: number;
   /** Ekspresi wajah air berdasarkan mood terakhir yang ditambahkan user */
   lastMoodExpression?: MoodExpression;
+  /**
+   * Warna tiap mood yang pernah ditambahkan, diurutkan dari yang PALING LAMA ke yang PALING BARU.
+   * Setiap mood akan digambar sebagai lapisan warna sendiri di dalam air, saling menumpuk
+   * (bukan hanya mengikuti warna mood terakhir).
+   */
+  moodColors?: string[];
   /** Tampilkan tooltip ajakan ("Klik untuk isi mood pertamamu") saat hover. Default true. */
   showHint?: boolean;
 }) {
@@ -57,8 +66,13 @@ export function InteractiveAquarium({
   }, [mounted]);
 
   const maxKapasitas = 50; 
-  const persentaseAir = Math.max(15, Math.min((displayLevel / maxKapasitas) * 100, 100));
+  const persentaseAir = displayLevel > 0 ? Math.max(15, Math.min((displayLevel / maxKapasitas) * 100, 100)) : 0;
   const expression: MoodExpression = lastMoodExpression ?? "netral";
+
+  // Lapisan warna air: setiap mood yang ditambahkan menjadi satu lapisan sendiri,
+  // ditumpuk dari bawah (mood terlama) ke atas (mood terbaru) — bukan menimpa satu sama lain.
+  const lapisanWarna = moodColors && moodColors.length > 0 ? moodColors.slice(-maxKapasitas) : [];
+  const warnaTetesan = lapisanWarna.length > 0 ? lapisanWarna[lapisanWarna.length - 1] : DEFAULT_WATER_COLOR;
 
   // Cegah render animasi sebelum komponen benar-benar dimuat di browser
   if (!mounted) return <div className="h-56 w-56" />;
@@ -76,22 +90,39 @@ export function InteractiveAquarium({
       {/* ANIMASI TETESAN AIR JATUH */}
       {isDropping && (
         <div 
-          className="absolute top-2 z-40 h-3 w-3 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.8)]" 
-          style={{ animation: 'dropWater 0.6s ease-in forwards' }} 
+          className="absolute top-2 z-40 h-3 w-3 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.6)]" 
+          style={{ animation: 'dropWater 0.6s ease-in forwards', backgroundColor: warnaTetesan }} 
         />
       )}
 
       {/* BADAN KACA AKUARIUM — BULAT SEMPURNA */}
       <div className="relative flex h-56 w-56 items-end justify-center overflow-hidden rounded-full border-[4px] border-white/50 bg-gradient-to-b from-white/10 to-blue-50/20 shadow-[inset_0_0_25px_rgba(255,255,255,0.7)] backdrop-blur-md transition-shadow duration-300 group-hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.7),0_0_0_6px_rgba(155,114,176,0.15)]">
         
-        {/* AIR DI DALAM AKUARIUM */}
-        <div 
-          className="relative w-full bg-gradient-to-t from-blue-500/80 to-cyan-300/60 transition-all duration-1000 ease-out motion-safe:animate-[bob_4s_ease-in-out_infinite]"
-          style={{ height: `${persentaseAir}%` }}
-        >
-          {/* Permukaan Air (Elips tipis di atas air) */}
-          <div className="absolute -top-2 left-0 right-0 h-4 w-full rounded-[50%] bg-cyan-200/50" />
-        </div>
+        {/* AIR DI DALAM AKUARIUM — setiap mood jadi lapisan warna sendiri, saling menumpuk.
+            Kalau belum ada mood sama sekali, akuarium sengaja dibiarkan kosong (tidak ada air). */}
+        {persentaseAir > 0 && (
+          <div 
+            className="relative w-full overflow-hidden transition-all duration-1000 ease-out motion-safe:animate-[bob_4s_ease-in-out_infinite]"
+            style={{ height: `${persentaseAir}%` }}
+          >
+            {/* Tumpukan lapisan warna mood: terlama di bawah, terbaru di atas */}
+            <div className="absolute inset-0 flex flex-col-reverse">
+              {lapisanWarna.map((warna, i) => (
+                <div
+                  key={i}
+                  className="w-full flex-1 transition-colors duration-500"
+                  style={{ backgroundColor: warna }}
+                />
+              ))}
+            </div>
+
+            {/* Kilau kaca tipis di atas lapisan warna, biar tetap terasa seperti air */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/0 via-white/0 to-white/30" />
+
+            {/* Permukaan Air (Elips tipis di atas air) */}
+            <div className="absolute -top-2 left-0 right-0 h-4 w-full rounded-[50%] bg-cyan-200/50" />
+          </div>
+        )}
 
         {/* WAJAH — SELALU DI TENGAH BOLA, MENGIKUTI MOOD TERAKHIR YANG DITAMBAHKAN */}
         <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center gap-2">

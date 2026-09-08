@@ -40,7 +40,7 @@ export async function GET() {
     .from(moodEntries)
     .where(eq(moodEntries.userId, userId))
     .orderBy(desc(moodEntries.createdAt))
-    .limit(30);
+    .limit(500);
 
   // Bentuk response disamakan dengan format lama (snake_case) supaya
   // frontend (src/app/dashboard/diary/page.tsx) tidak perlu diubah.

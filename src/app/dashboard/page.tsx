@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Card } from "@/components/ui/card";
 import { BookHeart } from "lucide-react";
 import { InteractiveAquarium } from "./interactive-aquarium";
@@ -38,12 +38,13 @@ export default function DashboardHome() {
   const savedMoodCount = entries?.length ?? 0;
 
   // Kategori mood berdasarkan skor 0–10 (skala yang sama dipakai di halaman Diary)
+  // "color" dipakai untuk lapisan air di akuarium & warna kalender, biar konsisten satu sama lain.
   const moodCategories = [
-    { label: "Sangat Sedih", emoji: "😭", min: 0, max: 2, ring: "border-purple-200", text: "text-purple-500" },
-    { label: "Sedih", emoji: "😢", min: 3, max: 4, ring: "border-blue-200", text: "text-blue-500" },
-    { label: "Netral", emoji: "😐", min: 5, max: 6, ring: "border-gray-200", text: "text-gray-500" },
-    { label: "Bahagia", emoji: "😌", min: 7, max: 8, ring: "border-green-200", text: "text-green-500" },
-    { label: "Sangat Bahagia", emoji: "🥰", min: 9, max: 10, ring: "border-yellow-200", text: "text-yellow-500" },
+    { label: "Sangat Sedih", emoji: "😭", min: 0, max: 2, ring: "border-purple-200", text: "text-purple-500", color: "#8b5cf6" },
+    { label: "Sedih", emoji: "😢", min: 3, max: 4, ring: "border-blue-200", text: "text-blue-500", color: "#3b82f6" },
+    { label: "Netral", emoji: "😐", min: 5, max: 6, ring: "border-gray-200", text: "text-gray-500", color: "#9ca3af" },
+    { label: "Bahagia", emoji: "😌", min: 7, max: 8, ring: "border-green-200", text: "text-green-500", color: "#22c55e" },
+    { label: "Sangat Bahagia", emoji: "🥰", min: 9, max: 10, ring: "border-yellow-200", text: "text-yellow-500", color: "#eab308" },
   ];
   const categoryOf = (score: number) =>
     moodCategories.find((c) => score >= c.min && score <= c.max) ?? moodCategories[2];
@@ -57,6 +58,13 @@ export default function DashboardHome() {
       ? "sedih"
       : "netral"
     : undefined;
+
+  // Warna tiap mood yang pernah ditambahkan, diurutkan dari yang PALING LAMA ke PALING BARU,
+  // supaya di akuarium tiap mood jadi lapisan warna sendiri yang menumpuk (bukan hanya warna terakhir).
+  const moodColors: string[] = (entries ?? [])
+    .slice()
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .map((e) => categoryOf(e.mood_score ?? 5).color);
 
   // Rekap mood hari ini
   const todayStr = new Date().toDateString();
@@ -81,6 +89,31 @@ export default function DashboardHome() {
   ];
   const weekDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
+  // Warna mood per tanggal di bulan berjalan, diurutkan lama -> baru per hari,
+  // supaya jika ada beberapa mood di hari yang sama, warnanya ikut menumpuk (tidak hanya warna terakhir).
+  const moodColorsByDay: Record<number, string[]> = {};
+  (entries ?? [])
+    .filter((e) => {
+      const d = new Date(e.created_at);
+      return d.getFullYear() === year && d.getMonth() === month;
+    })
+    .slice()
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .forEach((e) => {
+      const day = new Date(e.created_at).getDate();
+      const color = categoryOf(e.mood_score ?? 5).color;
+      (moodColorsByDay[day] ??= []).push(color);
+    });
+
+  // Bangun style tumpukan warna untuk satu sel kalender.
+  function buildDayStackStyle(colors?: string[]): CSSProperties | undefined {
+    if (!colors || colors.length === 0) return undefined;
+    if (colors.length === 1) return { backgroundColor: colors[0] };
+    const step = 100 / colors.length;
+    const stops = colors.map((c, i) => `${c} ${i * step}%, ${c} ${(i + 1) * step}%`).join(", ");
+    return { backgroundImage: `linear-gradient(to top, ${stops})` };
+  }
+
   return (
     <div className="space-y-6">
       {/* ================= BARIS 1: MOOD + KALENDER ================= */}
@@ -94,7 +127,11 @@ export default function DashboardHome() {
             <div className="flex w-full flex-col items-center justify-center gap-4 xl:w-1/3">
 
               <Link href="/dashboard/diary" aria-label="Isi mood sekarang">
-                <InteractiveAquarium totalMoods={savedMoodCount} lastMoodExpression={lastMoodExpression} />
+                <InteractiveAquarium
+                  totalMoods={savedMoodCount}
+                  lastMoodExpression={lastMoodExpression}
+                  moodColors={moodColors}
+                />
               </Link>
             </div>
 
@@ -133,20 +170,31 @@ export default function DashboardHome() {
             {weekDays.map((d) => (
               <div key={d}>{d}</div>
             ))}
-            {calendarCells.map((day, idx) => (
-              <div
-                key={idx}
-                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-xs ${
-                  day === todayDate
-                    ? "bg-primary font-bold text-white"
-                    : day
-                    ? "text-ink-muted hover:bg-primary-bg"
-                    : ""
-                }`}
-              >
-                {day ?? ""}
-              </div>
-            ))}
+            {calendarCells.map((day, idx) => {
+              const dayColors = day ? moodColorsByDay[day] : undefined;
+              const hasMood = !!dayColors?.length;
+              return (
+                <div
+                  key={idx}
+                  className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-xs transition-all ${
+                    hasMood
+                      ? "font-bold text-white"
+                      : day === todayDate
+                      ? "bg-primary font-bold text-white"
+                      : day
+                      ? "text-ink-muted hover:bg-primary-bg"
+                      : ""
+                  } ${day === todayDate ? "ring-2 ring-primary ring-offset-1" : ""}`}
+                  style={{
+                    ...buildDayStackStyle(dayColors),
+                    ...(hasMood ? { textShadow: "0 1px 2px rgba(0,0,0,0.35)" } : {}),
+                  }}
+                  title={hasMood ? `${dayColors!.length} mood tercatat` : undefined}
+                >
+                  {day ?? ""}
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>

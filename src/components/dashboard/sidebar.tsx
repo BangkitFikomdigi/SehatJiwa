@@ -15,12 +15,14 @@ import {
   Settings,
   LogOut,
   Shield,
+  CalendarDays,
 } from "lucide-react";
 
 const menu = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/ai", label: "AI", icon: Bot },
   { href: "/dashboard/diary", label: "Diary Mood", icon: BookHeart },
+  { href: "/dashboard/calendar", label: "Kalender", icon: CalendarDays },
   { href: "/dashboard/library", label: "Perpustakaan Psikologi", icon: Library },
   { href: "/dashboard/screening", label: "Tes Screening", icon: ClipboardCheck },
 ];
