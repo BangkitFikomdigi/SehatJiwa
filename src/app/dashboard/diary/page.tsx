@@ -142,8 +142,6 @@ export default function DiaryPage() {
     return "netral";
   }, [moodEntries]);
 
-  // Warna tiap mood yang pernah dicatat, diurutkan dari yang PALING LAMA ke PALING BARU,
-  // supaya di akuarium tiap mood jadi lapisan warna sendiri yang menumpuk.
   const moodColors = useMemo(
     () =>
       moodEntries
@@ -355,7 +353,6 @@ export default function DiaryPage() {
           </motion.div>
 
           <div className="w-full space-y-6 xl:w-2/3">
-            {/* Bagian atas: Perasaan — punya tombol simpan sendiri */}
             <div className="rounded-2xl border border-primary-lighter/60 bg-primary-bg/30 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <Label className="block text-ink">Perasaan — isi ini biar akuariummu terisi 🐟</Label>
@@ -379,27 +376,26 @@ export default function DiaryPage() {
                 {savingMood ? "Menyimpan..." : "💾 Simpan Mood"}
               </Button>
             </div>
-
-            {/* Bagian bawah: Jurnal — independen, punya tombol simpan sendiri */}
-            <div className="rounded-2xl border border-gray-100 bg-white/60 p-4">
-              <Label htmlFor="note" className="mb-3 block text-ink">Jurnal</Label>
-              <Textarea
-                id="note"
-                placeholder="Ceritakan hal yang terjadi hari ini..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="mb-4"
-              />
-              <Button
-                onClick={handleSaveJournal}
-                disabled={savingJournal}
-                variant="outline"
-                className="w-full justify-center rounded-full border-primary/30 text-primary hover:bg-primary-bg"
-              >
-                {savingJournal ? "Menyimpan..." : "📝 Simpan Jurnal"}
-              </Button>
-            </div>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-white/60 p-4">
+          <Label htmlFor="note" className="mb-3 block text-ink">Jurnal</Label>
+          <Textarea
+            id="note"
+            placeholder="Ceritakan hal yang terjadi hari ini..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="mb-4"
+          />
+          <Button
+            onClick={handleSaveJournal}
+            disabled={savingJournal}
+            variant="outline"
+            className="w-full justify-center rounded-full border-primary/30 text-primary hover:bg-primary-bg"
+          >
+            {savingJournal ? "Menyimpan..." : "📝 Simpan Jurnal"}
+          </Button>
         </div>
       </Card>
 
